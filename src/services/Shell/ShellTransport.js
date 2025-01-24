@@ -19,12 +19,10 @@ const QtMsgTypes = {
 };
 const QtObjId = 'transport'; // the ID of our transport object
 
-if (window.qt) {
-    window.initShellComm = function () {
-        delete window.initShellComm;
-        shellEvents.emit('availabilityChanged');
-    };
-}
+window.initShellComm = function () {
+    delete window.initShellComm;
+    shellEvents.emit('availabilityChanged');
+};
 
 const initialize = () => {
     if(!window.qt) return Promise.reject('Qt API not found');
@@ -61,7 +59,12 @@ function ShellTransport() {
             }
 
             transport.onmessage = function (message) {
-                const msg = JSON.parse(message.data);
+                let msg;
+                if (window.chrome && window.chrome.webview) {
+                    msg = message.data;
+                } else {
+                    msg = JSON.parse(message.data);
+                }
                 if (msg.id === 0) {
                     const obj = msg.data[QtObjId];
 

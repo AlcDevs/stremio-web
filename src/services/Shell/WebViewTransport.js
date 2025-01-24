@@ -4,7 +4,7 @@ const pako = require('pako');
 let shellAvailable = false;
 const shellEvents = new EventEmitter();
 
-if (window.chrome && window.chrome.webview) {
+if (!window.qt) {
     window.initShellComm = function () {
         delete window.initShellComm;
         shellEvents.emit('availabilityChanged');

@@ -318,14 +318,14 @@ const Settings = () => {
                         </div>
                     </div>
                     <div ref={playerSectionRef} className={styles['section-container']}>
-                        <div className={styles['section-title']}>{ t('SETTINGS_NAV_PLAYER') }</div>
+                        <div className={styles['section-title']}>{t('SETTINGS_NAV_PLAYER')}</div>
                         <div className={styles['section-category-container']}>
-                            <Icon className={styles['icon']} name={'subtitles'} />
+                            <Icon className={styles['icon']} name={'subtitles'}/>
                             <div className={styles['label']}>{t('SETTINGS_SECTION_SUBTITLES')}</div>
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SUBTITLES_LANGUAGE') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SUBTITLES_LANGUAGE')}</div>
                             </div>
                             <Multiselect
                                 className={classnames(styles['option-input-container'], styles['multiselect-container'])}
@@ -336,7 +336,7 @@ const Settings = () => {
                             shell.active ?
                                 <div className={styles['option-container']}>
                                     <div className={styles['option-name-container']}>
-                                        <div className={styles['label']}>{ t('SETTINGS_FULLSCREEN_EXIT') }</div>
+                                        <div className={styles['label']}>{t('SETTINGS_FULLSCREEN_EXIT')}</div>
                                     </div>
                                     <Toggle
                                         className={classnames(styles['option-input-container'], styles['toggle-container'])}
@@ -348,7 +348,7 @@ const Settings = () => {
                         }
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SUBTITLES_SIZE') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SUBTITLES_SIZE')}</div>
                             </div>
                             <Multiselect
                                 className={classnames(styles['option-input-container'], styles['multiselect-container'])}
@@ -357,7 +357,7 @@ const Settings = () => {
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SUBTITLES_COLOR') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SUBTITLES_COLOR')}</div>
                             </div>
                             <ColorInput
                                 className={classnames(styles['option-input-container'], styles['color-input-container'])}
@@ -366,7 +366,7 @@ const Settings = () => {
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SUBTITLES_COLOR_BACKGROUND') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SUBTITLES_COLOR_BACKGROUND')}</div>
                             </div>
                             <ColorInput
                                 className={classnames(styles['option-input-container'], styles['color-input-container'])}
@@ -375,7 +375,7 @@ const Settings = () => {
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SUBTITLES_COLOR_OUTLINE') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SUBTITLES_COLOR_OUTLINE')}</div>
                             </div>
                             <ColorInput
                                 className={classnames(styles['option-input-container'], styles['color-input-container'])}
@@ -385,12 +385,12 @@ const Settings = () => {
                     </div>
                     <div className={styles['section-container']}>
                         <div className={styles['section-category-container']}>
-                            <Icon className={styles['icon']} name={'volume-medium'} />
+                            <Icon className={styles['icon']} name={'volume-medium'}/>
                             <div className={styles['label']}>{t('SETTINGS_SECTION_AUDIO')}</div>
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_DEFAULT_AUDIO_TRACK') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_DEFAULT_AUDIO_TRACK') }</div>
                             </div>
                             <Multiselect
                                 className={classnames(styles['option-input-container'], styles['multiselect-container'])}

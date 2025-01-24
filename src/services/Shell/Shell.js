@@ -3,6 +3,7 @@
 const EventEmitter = require('eventemitter3');
 const ShellTransport = require('./ShellTransport');
 const WebViewTransport = require('./WebViewTransport');
+const pako = require('pako');
 
 function Shell({ core }) {
     let active = false;
@@ -25,6 +26,102 @@ function Shell({ core }) {
         starting = false;
         onStateChanged();
         transport = null;
+    }
+
+    function playLocalFile(filepath) {
+        const decodedPath = decodeURIComponent(filepath);
+        const fileName = decodedPath.split(/[\\/]/).pop();
+        const filePathPayload = {
+            url: decodedPath,
+            behaviorHints: {
+                filename: fileName,
+            }
+        };
+        const compressedPayload = pako.deflate(JSON.stringify(filePathPayload));
+        const base64String = Buffer.from(compressedPayload).toString('base64');
+        const urlSafeString = encodeURIComponent(base64String);
+        window.location.assign('#/player/' + urlSafeString);
+    }
+
+    function showDialogWhenExists() {
+        const dialog = document.getElementById('update-dialog');
+        if (dialog) {
+            dialog.style.display = 'flex';
+        } else {
+            setTimeout(showDialogWhenExists, 100);
+        }
+    }
+
+    function onAppEvent(event, nativeMsg) {
+        switch (event) {
+            case 'requestUpdate':
+                showDialogWhenExists();
+                break;
+            case 'showPictureInPicture': {
+                const pipOverlay = document.getElementById('pip-overlay');
+                if (pipOverlay) pipOverlay.style.display = 'block';
+                break;
+            }
+            case 'hidePictureInPicture': {
+                const pipOverlay = document.getElementById('pip-overlay');
+                if (pipOverlay) pipOverlay.style.display = 'none';
+                break;
+            }
+            case 'FileDropped': {
+                playLocalFile(nativeMsg.path);
+                break;
+            }
+            case 'AddonInstall': {
+                const addonPath = nativeMsg.path.replace('stremio://', 'https://');
+                window.location.assign('#/addons?addon=' + addonPath);
+                break;
+            }
+            case 'OpenFile': {
+                playLocalFile(nativeMsg.path);
+                break;
+            }
+            case 'OpenTorrent': {
+                let argsData;
+                if (nativeMsg.data) {
+                    const uint8Array = new Uint8Array(nativeMsg.data);
+                    argsData = Array.from(uint8Array);
+                } else if (nativeMsg.magnet) {
+                    argsData = nativeMsg.magnet;
+                }
+                if (!argsData) break;
+                core.transport.dispatch({
+                    action: 'StreamingServer',
+                    args: {
+                        action: 'CreateTorrent',
+                        args: argsData
+                    }
+                });
+                break;
+            }
+            case 'ServerStarted': {
+                const reloadServer = () => {
+                    core.transport.dispatch({
+                        action: 'StreamingServer',
+                        args: {
+                            action: 'Reload',
+                        },
+                    });
+                };
+                if (core.active) {
+                    reloadServer();
+                } else {
+                    const onCoreEvent = () => {
+                        reloadServer();
+                        core.transport.off('CoreEvent', onCoreEvent);
+                    };
+                    core.transport.on('CoreEvent', onCoreEvent);
+                }
+                break;
+            }
+            default:
+                console.warn('Unknown onAppEvent Message: ' + nativeMsg);
+                break;
+        }
     }
 
     function onStateChanged() {
@@ -69,13 +166,25 @@ function Shell({ core }) {
 
         active = false;
         starting = true;
-        if (window.qt && (!window.chrome || !window.chrome.webview)) {
+        if (window.qt) {
+            console.error('Qt Transport');
             transport = new ShellTransport();
         } else {
+            //For Backwards compatibility
+            console.error('WebView Transport');
             transport = new WebViewTransport({ core });
         }
         transport.on('init', onTransportInit);
         transport.on('init-error', onTransportInitError);
+        // General AppEvents
+        transport.on('requestUpdate', (data) => onAppEvent('requestUpdate', data));
+        transport.on('showPictureInPicture', (data) => onAppEvent('showPictureInPicture', data));
+        transport.on('hidePictureInPicture', (data) => onAppEvent('hidePictureInPicture', data));
+        transport.on('FileDropped', (data) => onAppEvent('FileDropped', data));
+        transport.on('AddonInstall', (data) => onAppEvent('AddonInstall', data));
+        transport.on('OpenFile', (data) => onAppEvent('OpenFile', data));
+        transport.on('OpenTorrent', (data) => onAppEvent('OpenTorrent', data));
+        transport.on('ServerStarted', (data) => onAppEvent('ServerStarted', data));
         onStateChanged();
     };
     this.stop = function() {

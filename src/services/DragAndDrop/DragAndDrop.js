@@ -37,7 +37,7 @@ function DragAndDrop({ core, shell }) {
                     break;
                 }
                 default: {
-                    if (shell.active && !window.qt.webChannelTransport) {
+                    if (shell.active && window.chrome && window.chrome.webview) {
                         events.emit('success', {
                             message: 'Attempting local playback',
                             file: {
