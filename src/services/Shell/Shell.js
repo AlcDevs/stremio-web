@@ -57,6 +57,9 @@ function Shell({ core }) {
             case 'requestUpdate':
                 showDialogWhenExists();
                 break;
+            case 'ReplaceLocation':
+                window.location.assign(decodeURIComponent(nativeMsg.path.replace('stremio://', '/#/')));
+                break;
             case 'showPictureInPicture': {
                 const pipOverlay = document.getElementById('pip-overlay');
                 if (pipOverlay) pipOverlay.style.display = 'block';
@@ -167,11 +170,11 @@ function Shell({ core }) {
         active = false;
         starting = true;
         if (window.qt) {
-            console.error('Qt Transport');
+            console.log('Qt Transport');
             transport = new ShellTransport();
         } else {
             //For Backwards compatibility
-            console.error('WebView Transport');
+            console.log('WebView Transport');
             transport = new WebViewTransport({ core });
         }
         transport.on('init', onTransportInit);
@@ -185,6 +188,7 @@ function Shell({ core }) {
         transport.on('OpenFile', (data) => onAppEvent('OpenFile', data));
         transport.on('OpenTorrent', (data) => onAppEvent('OpenTorrent', data));
         transport.on('ServerStarted', (data) => onAppEvent('ServerStarted', data));
+        transport.on('ReplaceLocation', (data) => onAppEvent('ReplaceLocation', data));
         onStateChanged();
     };
     this.stop = function() {

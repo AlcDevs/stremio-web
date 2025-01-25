@@ -492,7 +492,8 @@ const Player = ({ urlParams, queryParams }) => {
 
     React.useLayoutEffect(() => {
         const onKeyDown = (event) => {
-            switch (event.code) {
+            const codeOrKey = event.code || event.key;
+            switch (codeOrKey) {
                 case 'MediaPlayPause':
                 case 'Space': {
                     if (!menusOpen && !nextVideoPopupOpen && video.state.paused !== null) {
