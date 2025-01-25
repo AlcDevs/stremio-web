@@ -58,7 +58,7 @@ function Shell({ core }) {
                 showDialogWhenExists();
                 break;
             case 'ReplaceLocation':
-                window.location.assign(decodeURIComponent(nativeMsg.path.replace('stremio://', '/#/')));
+                window.location.assign(decodeURIComponent(nativeMsg.path.replace('stremio://', '#/')));
                 break;
             case 'showPictureInPicture': {
                 const pipOverlay = document.getElementById('pip-overlay');
