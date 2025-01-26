@@ -52,7 +52,7 @@
         flex-direction: row;
         margin-top: calc(var(--top-overlay-size) * -1);
         padding-top: var(--top-overlay-size);
-        padding-bottom: var(--calculated-bottom-safe-inset, 0rem);
+        padding-bottom: var(--safe-area-inset-bottom, 0rem);
         .vertical-nav-bar {
             flex: none;
         }
@@ -121,6 +121,16 @@
         .meta-extension-modal-iframe {
             width: 100%;
             height: 100%;
+        }
+    }
+}
+
+@media @phone-landscape {
+    .metadetails-container {
+        .metadetails-content {
+            .meta-preview {
+                padding: 0 1.5rem 1rem;
+            }
         }
     }
 }

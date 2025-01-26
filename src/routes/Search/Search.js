@@ -97,14 +97,17 @@ const Search = ({ queryParams }) => {
                                         );
                                     }
                                     case 'Err': {
-                                        return (
-                                            <MetaRow
-                                                key={index}
-                                                className={classnames(styles['search-row'], 'animation-fade-in')}
-                                                catalog={catalog}
-                                                message={catalog.content.content}
-                                            />
-                                        );
+                                        if (catalog.content.content !== 'EmptyContent') {
+                                            return (
+                                                <MetaRow
+                                                    key={index}
+                                                    className={classnames(styles['search-row'], 'animation-fade-in')}
+                                                    catalog={catalog}
+                                                    message={catalog.content.content}
+                                                />
+                                            );
+                                        }
+                                        return null;
                                     }
                                     default: {
                                         return (

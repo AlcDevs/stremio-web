@@ -213,6 +213,30 @@
     width: 30rem;
 }
 
+
+@media @phone-landscape {
+    .meta-preview-container {
+        .meta-info-container {
+            .logo {
+                height: 5rem;
+                margin-bottom: 1rem;
+            }
+        }
+
+        .action-buttons-container {
+            padding-top: 1.5rem;
+            gap: 0.5rem;
+
+            .action-button {
+                padding: 0 1.5rem !important;
+                margin-right: 0rem !important;
+                height: 3rem;
+                border-radius: 2rem;
+            }
+        }
+    }
+}
+
 @media only screen and (max-width: @minimum) {
     .meta-preview-container {
         .meta-info-container {
@@ -229,16 +253,16 @@
             }
         }
 
-            .action-buttons-container {
-                flex-shrink: 0;
-                margin-top: 3rem;
-                overflow: visible;
-                scrollbar-width: none;
-    
-                &::-webkit-scrollbar {
-                    display: none;
-                }
+        .action-buttons-container {
+            flex-shrink: 0;
+            margin-top: 3rem;
+            overflow: visible;
+            scrollbar-width: none;
+
+            &::-webkit-scrollbar {
+                display: none;
             }
+        }
     }
 
     .share-prompt {

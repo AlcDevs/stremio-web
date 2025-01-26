@@ -76,14 +76,6 @@ const NextVideoPopup = ({ className, metaItem, nextVideo, onDismiss, onNextVideo
                             :
                             null
                     }
-                    {
-                        nextVideo !== null && typeof nextVideo.overview === 'string' ?
-                            <div className={styles['description']}>
-                                { nextVideo.overview }
-                            </div>
-                            :
-                            null
-                    }
                 </div>
                 <div className={styles['buttons-container']}>
                     <Button className={classnames(styles['button-container'], styles['dismiss'])} onClick={onDismissButtonClick}>

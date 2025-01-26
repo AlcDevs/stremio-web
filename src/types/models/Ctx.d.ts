@@ -9,6 +9,7 @@ type Auth = {
             created_at: number,
             expires_in: number,
         },
+        isNewUser: boolean,
     },
 };
 

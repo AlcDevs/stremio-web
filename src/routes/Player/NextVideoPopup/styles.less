@@ -1,17 +1,19 @@
 // Copyright (C) 2017-2023 Smart code 203358507
 
 @import (reference) '~@stremio/stremio-colors/less/stremio-colors.less';
+@import (reference) '~stremio/common/screen-sizes.less';
 
 .next-video-popup-container {
     display: flex;
     flex-direction: row;
-    width: 50rem;
+    width: 38rem;
+    min-height: 13rem;
     animation: slide-fade-in 0.5s ease-in;
 
     @keyframes slide-fade-in {
         0% {
             opacity: 0;
-            transform: translateX(15rem);
+            transform: translateX(calc(40rem + 2rem));
         }
 
         100% {
@@ -21,7 +23,7 @@
     }
 
     .poster-container {
-        flex: 1 1 45%;
+        flex: 1 1 25%;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -50,14 +52,16 @@
 
         .details-container {
             flex: auto;
-            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1.5rem 2rem;
 
             .name {
                 flex: none;
                 align-self: stretch;
                 max-height: 2.4em;
                 font-weight: 700;
-                margin-bottom: 1.5rem;
                 color: var(--primary-accent-color);
 
                 .label {
@@ -70,36 +74,30 @@
                 align-self: stretch;
                 max-height: 2.4em;
                 font-weight: 500;
-                margin-bottom: 0.5rem;
                 color: var(--primary-foreground-color);
-            }
-
-            .description {
-                color: var(--primary-foreground-color);
-                opacity: 0.5;
-                max-width: 80%;
-                padding: 0.5rem 0;
             }
         }
 
         .buttons-container {
             display: flex;
             flex-direction: row;
-            padding: 0 1rem 2rem;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0 1rem 1.5rem;
 
             .spacing {
                 flex: 0 0 50%;
             }
 
             .button-container {
-                flex: 0 0 45%;
+                flex: 0 1 50%;
                 display: flex;
                 flex-direction: row;
                 align-items: center;
                 justify-content: center;
+                gap: 1rem;
                 height: 3.5rem;
-                padding: 0 0.5rem;
-                margin-left: 1rem;
+                padding: 0 1rem;
                 border-radius: 1.75rem;
 
                 &.play-button {
@@ -123,7 +121,6 @@
                     flex: none;
                     width: 1.4rem;
                     height: 1.4rem;
-                    margin-right: 1rem;
                     color: var(--primary-foreground-color);
                 }
 
@@ -141,6 +138,28 @@
 
                 &:hover, &:focus {
                     background-color: var(--overlay-color);
+                }
+            }
+        }
+    }
+}
+
+@media @phone-portrait {
+    .next-video-popup-container {
+        .info-container {
+            .buttons-container {
+                gap: 0.5rem;
+
+                .button-container {
+                    margin-left: 0rem;
+
+                    .icon {
+                        margin-right: 0rem;
+                    }
+
+                    .label {
+                        display: none;
+                    }
                 }
             }
         }

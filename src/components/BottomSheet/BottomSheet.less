@@ -101,7 +101,7 @@
 @media only screen and (orientation: landscape) {
     .bottom-sheet {
         .container {
-            max-width: 90%;
+            max-width: calc(90% - var(--safe-area-inset-left) - var(--safe-area-inset-right));
         }
     }
 }

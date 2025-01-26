@@ -23,8 +23,8 @@
 // HTML sizes
 @html-width: ~"calc(max(var(--small-viewport-width), var(--dynamic-viewport-width)))";
 @html-height: ~"calc(max(var(--small-viewport-height), var(--dynamic-viewport-height)))";
-@html-standalone-width: ~"calc(max(100%, var(--large-viewport-width)))";
-@html-standalone-height: ~"calc(max(100%, var(--large-viewport-height)))";
+@html-standalone-width: ~"calc(max(100%, var(--small-viewport-width)))";
+@html-standalone-height: ~"calc(max(100%, var(--small-viewport-height)))";
 
 // Safe area insets
 @safe-area-inset-top: env(safe-area-inset-top, 0rem);
@@ -64,7 +64,6 @@
     --modal-background-color: rgba(15, 13, 32, 1);
     --outer-glow: 0px 0px 15px rgba(123, 91, 245, 0.37);
     --border-radius: 0.75rem;
-    --calculated-bottom-safe-inset: @calculated-bottom-safe-inset;
     --top-overlay-size: @top-overlay-size;
     --bottom-overlay-size: @bottom-overlay-size;
     --overlap-size: @overlap-size;
@@ -98,6 +97,10 @@
 
     @supports (height: 100lvh) and (height: 100svh) {
         --viewport-height-diff: calc(100lvh - 100svh);
+    }
+
+    @media (display-mode: standalone) {
+        --safe-area-inset-bottom: @calculated-bottom-safe-inset;
     }
 }
 
@@ -174,7 +177,7 @@ html {
                 position: absolute;
                 top: calc(1.2 * var(--horizontal-nav-bar-size) + var(--safe-area-inset-top));
                 right: var(--safe-area-inset-right);
-                bottom: calc(1.2 * var(--horizontal-nav-bar-size) + var(--calculated-bottom-safe-inset, 0rem));
+                bottom: calc(1.2 * var(--horizontal-nav-bar-size) + var(--safe-area-inset-bottom, 0rem));
                 left: auto;
                 z-index: 1;
                 padding: 0 calc(0.5 * var(--horizontal-nav-bar-size));
