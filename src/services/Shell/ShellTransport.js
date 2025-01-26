@@ -59,12 +59,7 @@ function ShellTransport() {
             }
 
             transport.onmessage = function (message) {
-                let msg;
-                if (window.chrome && window.chrome.webview) {
-                    msg = message.data;
-                } else {
-                    msg = JSON.parse(message.data);
-                }
+                const msg = JSON.parse(message.data);
                 if (msg.id === 0) {
                     const obj = msg.data[QtObjId];
 
