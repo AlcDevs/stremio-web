@@ -9,7 +9,12 @@ const { Slider } = require('stremio/components');
 const styles = require('./styles');
 
 const VolumeSlider = ({ className, volume, onVolumeChangeRequested }) => {
-    const disabled = volume === null || isNaN(volume);
+    const disabled = false;
+    if (volume === null || isNaN(volume)) {
+        if (typeof onVolumeChangeRequested === 'function') {
+            onVolumeChangeRequested(50);
+        }
+    }
     const routeFocused = useRouteFocused();
     const [slidingVolume, setSlidingVolume] = React.useState(null);
     const resetVolumeDebounced = React.useCallback(debounce(() => {
