@@ -187,6 +187,12 @@ const Settings = () => {
                             :
                             null
                     }
+                    {
+                        typeof shell?.transport?.props?.shellVersion === 'string' ?
+                            <div className={styles['version-info-label']} title={shell.transport.props.shellVersion}>Shell Version: {shell.transport.props.shellVersion}</div>
+                            :
+                            null
+                    }
                 </div>
                 <div ref={sectionsContainerRef} className={styles['sections-container']} onScroll={sectionsContainerOnScroll}>
                     <div ref={generalSectionRef} className={styles['section-container']}>
@@ -711,6 +717,23 @@ const Settings = () => {
                                     <div className={classnames(styles['option-input-container'], styles['info-container'])}>
                                         <div className={styles['label']}>
                                             {streamingServer.settings.content.serverVersion}
+                                        </div>
+                                    </div>
+                                </div>
+                                :
+                                null
+                        }
+                        {
+                            typeof shell?.transport?.props?.shellVersion === 'string' ?
+                                <div className={styles['option-container']}>
+                                    <div className={styles['option-name-container']}>
+                                        <div className={styles['label']}>
+                                            Shell Version
+                                        </div>
+                                    </div>
+                                    <div className={classnames(styles['option-input-container'], styles['info-container'])}>
+                                        <div className={styles['label']}>
+                                            { shell.transport.props.shellVersion }
                                         </div>
                                     </div>
                                 </div>

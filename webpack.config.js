@@ -163,7 +163,7 @@ module.exports = (env, argv) => ({
                 exclude: /node_modules/,
                 type: 'asset/resource',
                 generator: {
-                    filename: `${COMMIT_HASH}/images/[name][ext][query]`
+                    filename: 'images/[name][ext][query]'
                 }
             },
             {
@@ -231,9 +231,9 @@ module.exports = (env, argv) => ({
             }),
         new CopyWebpackPlugin({
             patterns: [
-                { from: 'favicons', to: `${COMMIT_HASH}/favicons` },
-                { from: 'images', to: `${COMMIT_HASH}/images` },
-                { from: 'screenshots/*.webp', to: `${COMMIT_HASH}` },
+                { from: 'favicons', to: 'favicons' },
+                { from: 'images', to: 'images' },
+                { from: 'screenshots/*.webp', to: './' },
             ]
         }),
         new MiniCssExtractPlugin({
@@ -243,8 +243,8 @@ module.exports = (env, argv) => ({
             template: './src/index.html',
             inject: false,
             scriptLoading: 'blocking',
-            faviconsPath: `${COMMIT_HASH}/favicons`,
-            imagesPath: `${COMMIT_HASH}/images`,
+            faviconsPath: 'favicons',
+            imagesPath: 'images',
         }),
         new WebpackPwaManifest({
             name: 'Stremio Web',
@@ -261,33 +261,33 @@ module.exports = (env, argv) => ({
             icons: [
                 {
                     src: 'images/icon.png',
-                    destination: `${COMMIT_HASH}/icons`,
+                    destination: 'icons',
                     sizes: [196, 512],
                     purpose: 'any'
                 },
                 {
                     src: 'images/maskable_icon.png',
-                    destination: `${COMMIT_HASH}/maskable_icons`,
+                    destination: 'maskable_icons',
                     sizes: [196, 512],
                     purpose: 'maskable',
                     ios: true
                 },
                 {
                     src: 'favicons/favicon.ico',
-                    destination: `${COMMIT_HASH}/favicons`,
+                    destination: 'favicons',
                     sizes: [256],
                 }
             ],
             screenshots : [
                 {
-                    src: `${COMMIT_HASH}/screenshots/board_wide.webp`,
+                    src: 'screenshots/board_wide.webp',
                     sizes: '1440x900',
                     type: 'image/webp',
                     form_factor: 'wide',
                     label: 'Homescreen of Stremio'
                 },
                 {
-                    src: `${COMMIT_HASH}/screenshots/board_narrow.webp`,
+                    src: 'screenshots/board_narrow.webp',
                     sizes: '414x896',
                     type: 'image/webp',
                     form_factor: 'narrow',
