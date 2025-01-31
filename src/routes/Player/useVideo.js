@@ -18,7 +18,7 @@ const useVideo = () => {
         duration: null,
         buffering: null,
         buffered: null,
-        volume: null,
+        volume: 50,
         muted: null,
         playbackSpeed: null,
         videoParams: null,

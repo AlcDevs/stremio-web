@@ -20,14 +20,6 @@ const styles = require('./styles');
 const RouterWithProtectedRoutes = withCoreSuspender(withProtectedRoutes(Router));
 
 const App = () => {
-    window.addEventListener('hashchange', () => {
-        //Quick Fix for now until blackscreen issue resovled
-        if (!window.location.href.includes('/player')) {
-            setTimeout(() => {
-                document.body.style.removeProperty('background');
-            }, 100);
-        }
-    });
     const { i18n } = useTranslation();
     const onPathNotMatch = React.useCallback(() => {
         return NotFound;

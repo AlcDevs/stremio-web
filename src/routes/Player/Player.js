@@ -8,7 +8,7 @@ const langs = require('langs');
 const { useTranslation } = require('react-i18next');
 const { useRouteFocused } = require('stremio-router');
 const { useServices } = require('stremio/services');
-const { useFullscreen, useBinaryState, useToast, useStreamingServer, withCoreSuspender } = require('stremio/common');
+const { useFullscreen, useBinaryState, useToast, useStreamingServer, withCoreSuspender, useProfile} = require('stremio/common');
 const { HorizontalNavBar, Transition } = require('stremio/components');
 const BufferingLoader = require('./BufferingLoader');
 const VolumeChangeIndicator = require('./VolumeChangeIndicator');
@@ -43,6 +43,7 @@ const Player = ({ urlParams, queryParams }) => {
     const video = useVideo();
     const routeFocused = useRouteFocused();
     const toast = useToast();
+    const profile = useProfile();
 
     const [seeking, setSeeking] = React.useState(false);
 
@@ -718,6 +719,13 @@ const Player = ({ urlParams, queryParams }) => {
         video.events.on('extraSubtitlesTrackLoaded', onExtraSubtitlesTrackLoaded);
         video.events.on('implementationChanged', onImplementationChanged);
 
+        if (profile.settings.hardwareDecoding) {
+            shell.transport.send('mpv-set-prop', ['hwdec', 'auto-copy']);
+            shell.transport.send('mpv-set-prop', ['hwdec-codecs', 'all']);
+        } else {
+            shell.transport.send('mpv-set-prop', ['hwdec', 'no']);
+            shell.transport.send('mpv-set-prop', ['hwdec-codecs', 'h264,vc1,hevc,vp8,vp9,av1,prores']);
+        }
         return () => {
             video.events.off('error', onError);
             video.events.off('ended', onEnded);
