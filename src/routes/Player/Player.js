@@ -719,10 +719,10 @@ const Player = ({ urlParams, queryParams }) => {
         video.events.on('extraSubtitlesTrackLoaded', onExtraSubtitlesTrackLoaded);
         video.events.on('implementationChanged', onImplementationChanged);
 
-        if (profile.settings.hardwareDecoding) {
+        if (shell.active && profile.settings.hardwareDecoding) {
             shell.transport.send('mpv-set-prop', ['hwdec', 'auto-copy']);
             shell.transport.send('mpv-set-prop', ['hwdec-codecs', 'all']);
-        } else {
+        } else if (shell.active) {
             shell.transport.send('mpv-set-prop', ['hwdec', 'no']);
             shell.transport.send('mpv-set-prop', ['hwdec-codecs', 'h264,vc1,hevc,vp8,vp9,av1,prores']);
         }
