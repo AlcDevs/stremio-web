@@ -19,7 +19,7 @@ const { AddonPlaceholder } = require('./AddonPlaceholder');
 const Addons = ({ urlParams, queryParams }) => {
     const { t } = useTranslation();
     const platform = usePlatform();
-    const { core } = useServices();
+    const { core, shell } = useServices();
     const installedAddons = useInstalledAddons(urlParams);
     const remoteAddons = useRemoteAddons(urlParams);
     const [addonDetailsTransportUrl, setAddonDetailsTransportUrl] = useAddonDetailsTransportUrl(urlParams, queryParams);
@@ -27,6 +27,7 @@ const Addons = ({ urlParams, queryParams }) => {
     const [filtersModalOpen, openFiltersModal, closeFiltersModal] = useBinaryState(false);
     const [addAddonModalOpen, openAddAddonModal, closeAddAddonModal] = useBinaryState(false);
     const addAddonUrlInputRef = React.useRef(null);
+    const [extensionMappings, setExtensionMappings] = React.useState([]);
     const addAddonOnSubmit = React.useCallback(() => {
         if (addAddonUrlInputRef.current !== null) {
             setAddonDetailsTransportUrl(addAddonUrlInputRef.current.value);
@@ -102,6 +103,32 @@ const Addons = ({ urlParams, queryParams }) => {
         setSearch('');
         clearSharedAddon();
     }, [urlParams, queryParams]);
+    React.useEffect(() => {
+        // Supported Browser Extensions manifest data
+        const url = 'https://raw.githubusercontent.com/Zaarrg/stremio-desktop-v5/refs/heads/webview-windows/extensions/extensions.json';
+        fetch(url)
+            .then((res) => res.json())
+            .then((data) => {
+                let browserExtensions = [];
+                if (typeof shell?.transport?.props?.BrowserExtensions === 'object') {
+                    Object.entries(shell.transport.props.BrowserExtensions).map(([extName, extId]) => {
+                        browserExtensions.push({
+                            'manifest': {
+                                id: extId,
+                                version: extName.split('_')[1],
+                                ...data[extName.split('_')[0]]
+                            },
+                            'installed': true,
+                        });
+                    });
+                }
+                setExtensionMappings(browserExtensions);
+                console.log(browserExtensions);
+            })
+            .catch((err) => {
+                console.error('Failed to fetch extension JSON', err);
+            });
+    }, []);
     return (
         <MainNavBars className={styles['addons-container']} route={'addons'}>
             <div className={styles['addons-content']}>
@@ -162,6 +189,38 @@ const Addons = ({ urlParams, queryParams }) => {
                                                     onOpen={onAddonOpen}
                                                     onShare={onAddonShare}
                                                     dataset={{ addon }}
+                                                    isExtension={false}
+                                                />
+                                            ))
+                                    }
+                                    {
+                                        extensionMappings
+                                            .filter(searchFilterPredicate)
+                                            .map((addon, index) => (
+                                                <Addon
+                                                    key={index}
+                                                    className={classnames(styles['addon'], 'animation-fade-in')}
+                                                    id={addon.manifest.id}
+                                                    name={addon.manifest.name}
+                                                    version={addon.manifest.version}
+                                                    logo={addon.manifest.logo}
+                                                    description={addon.manifest.description}
+                                                    types={addon.manifest.types}
+                                                    behaviorHints={addon.manifest.behaviorHints}
+                                                    installed={addon.installed}
+                                                    onUninstall={() => {
+                                                        platform.openExternal('https://github.com/Zaarrg/stremio-desktop-v5#-stremio-app');
+                                                    }}
+                                                    onConfigure={() => {
+                                                        if (shell.active) {
+                                                            const uri = `chrome-extension://${addon.manifest.id}/${addon.manifest.page || 'options.html'}`;
+                                                            shell.transport.send('navigate', [uri]);
+                                                        }
+                                                    }}
+                                                    onOpen={onAddonOpen}
+                                                    onShare={onAddonShare}
+                                                    dataset={{ addon }}
+                                                    isExtension={true}
                                                 />
                                             ))
                                     }
