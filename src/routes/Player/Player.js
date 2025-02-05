@@ -777,7 +777,7 @@ const Player = ({ urlParams, queryParams }) => {
         document.addEventListener('visibilitychange', onVisibilityChange);
 
         if (shell.active && profile.settings.hardwareDecoding) {
-            shell.transport.send('mpv-set-prop', ['hwdec', 'auto-copy']);
+            shell.transport.send('mpv-set-prop', ['hwdec', 'auto-safe']);
             shell.transport.send('mpv-set-prop', ['hwdec-codecs', 'all']);
         } else if (shell.active) {
             shell.transport.send('mpv-set-prop', ['hwdec', 'no']);
