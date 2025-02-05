@@ -1,6 +1,6 @@
 // Copyright (C) 2017-2023 Smart code 203358507
 
-const { PlatformProvider, usePlatform } = require('./Platform');
+const { PlatformProvider, usePlatform, StorageProvider, useStorage } = require('./Platform');
 const { ToastProvider, useToast } = require('./Toast');
 const { TooltipProvider, Tooltip } = require('./Tooltips');
 const comparatorWithPriorities = require('./comparatorWithPriorities');
@@ -26,6 +26,8 @@ const useTranslate = require('./useTranslate');
 module.exports = {
     PlatformProvider,
     usePlatform,
+    StorageProvider,
+    useStorage,
     ToastProvider,
     useToast,
     TooltipProvider,

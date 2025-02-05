@@ -3,12 +3,17 @@
 const React = require('react');
 const Video = require('@stremio/stremio-video');
 const EventEmitter = require('eventemitter3');
+const {useServices} = require('stremio/services');
+const {useStorage} = require('stremio/common');
+const isoConv = require('iso-language-converter');
 
 const events = new EventEmitter();
 
 const useVideo = () => {
     const video = React.useRef(null);
     const containerElement = React.useRef(null);
+    const [storage,] = useStorage();
+    const { shell } = useServices();
 
     const [state, setState] = React.useState({
         manifest: null,
@@ -28,6 +33,7 @@ const useVideo = () => {
         selectedSubtitlesTrackId: null,
         subtitlesOffset: null,
         subtitlesSize: null,
+        subtitlesDelay: null,
         subtitlesTextColor: null,
         subtitlesBackgroundColor: null,
         subtitlesOutlineColor: null,
@@ -70,6 +76,12 @@ const useVideo = () => {
     };
 
     const addExtraSubtitlesTracks = (tracks) => {
+        if (shell.active) {
+            tracks.forEach((track) => {
+                shell.transport.send('mpv-command', ['sub-add', track.url, 'auto', `${track.origin} External`, track.lang]);
+            });
+            return;
+        }
         dispatch({
             type: 'command',
             commandName: 'addExtraSubtitlesTracks',
@@ -100,6 +112,23 @@ const useVideo = () => {
     };
 
     const onPropChanged = (name, value) => {
+        const allowedLanguagesMap = {
+            audioTracks: storage.allowedAudioLanguages,
+            subtitlesTracks: storage.allowedSubtitleLanguages,
+            extraSubtitlesTracks: storage.allowedSubtitleLanguages,
+        };
+        const allowedLanguages = allowedLanguagesMap[name];
+        if (Array.isArray(allowedLanguages) && allowedLanguages.length > 0) {
+            if (!allowedLanguages.includes('any')) {
+                value = value.filter((track) => {
+                    return allowedLanguages.some((allowed) => track.lang === allowed || isoConv(track.lang) === isoConv(allowed));
+                });
+            }
+            value = value.map((track) => ({
+                ...track,
+                lang: isoConv(track.lang, { to: 2 }) || track.lang,
+            }));
+        }
         setState((state) => ({
             ...state,
             [name]: value

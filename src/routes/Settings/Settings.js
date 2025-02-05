@@ -7,18 +7,20 @@ const { useTranslation } = require('react-i18next');
 const { default: Icon } = require('@stremio/stremio-icons/react');
 const { useRouteFocused } = require('stremio-router');
 const { useServices } = require('stremio/services');
-const { useProfile, usePlatform, useStreamingServer, withCoreSuspender, useToast } = require('stremio/common');
+const { useProfile, usePlatform, useStreamingServer, withCoreSuspender, useToast, useStorage} = require('stremio/common');
 const { Button, ColorInput, MainNavBars, Multiselect, Toggle } = require('stremio/components');
 const useProfileSettingsInputs = require('./useProfileSettingsInputs');
 const useStreamingServerSettingsInputs = require('./useStreamingServerSettingsInputs');
 const useDataExport = require('./useDataExport');
 const styles = require('./styles');
 const { default: URLsManager } = require('./URLsManager/URLsManager');
+const {defaultsMultiSelect} = require('stremio/common/Platform/useStorage');
 
 const GENERAL_SECTION = 'general';
 const PLAYER_SECTION = 'player';
 const STREAMING_SECTION = 'streaming';
 const SHORTCUTS_SECTION = 'shortcuts';
+const PLAYER_SHORTCUTS_SECTION = 'player shortcuts';
 
 const Settings = () => {
     const { t } = useTranslation();
@@ -26,6 +28,7 @@ const Settings = () => {
     const { routeFocused } = useRouteFocused();
     const profile = useProfile();
     const [dataExport, loadDataExport] = useDataExport();
+    const [storage, updateStorage] = useStorage();
     const streamingServer = useStreamingServer();
     const platform = usePlatform();
     const toast = useToast();
@@ -111,11 +114,13 @@ const Settings = () => {
     const playerSectionRef = React.useRef(null);
     const streamingServerSectionRef = React.useRef(null);
     const shortcutsSectionRef = React.useRef(null);
+    const shortcutsPlayerSectionRef = React.useRef(null);
     const sections = React.useMemo(() => ([
         { ref: generalSectionRef, id: GENERAL_SECTION },
         { ref: playerSectionRef, id: PLAYER_SECTION },
         { ref: streamingServerSectionRef, id: STREAMING_SECTION },
         { ref: shortcutsSectionRef, id: SHORTCUTS_SECTION },
+        { ref: shortcutsPlayerSectionRef, id: PLAYER_SHORTCUTS_SECTION },
     ]), []);
     const [selectedSectionId, setSelectedSectionId] = React.useState(GENERAL_SECTION);
     const updateSelectedSectionId = React.useCallback(() => {
@@ -130,6 +135,63 @@ const Settings = () => {
             }
         }
     }, []);
+    React.useEffect(() => {
+        if (storage.allowedSubtitleLanguages && storage.allowedSubtitleLanguages.length === 0) {
+            updateStorageStringList('allowedSubtitleLanguages')({ value: 'all' });
+        }
+        if (storage.allowedAudioLanguages && storage.allowedAudioLanguages.length === 0) {
+            updateStorageStringList('allowedAudioLanguages')({ value: 'all' });
+        }
+    }, [storage.allowedSubtitleLanguages, storage.allowedAudioLanguages]);
+    const updateStorageStringList = React.useCallback((storageKey) => (selectedOption) => {
+        const defaultValues = {
+            allowedSubtitleLanguages: ['any'],
+            defaultSubtitleLanguages: ['eng'],
+            allowedAudioLanguages: ['any'],
+            defaultAudioLanguages: ['eng'],
+            subtitlePriorityKeywords: ['Disabled']
+        };
+
+        const optionsMapping = {
+            allowedSubtitleLanguages: subtitlesLanguageSelect.options,
+            defaultSubtitleLanguages: subtitlesLanguageSelect.options,
+            allowedAudioLanguages: audioLanguageSelect.options,
+            defaultAudioLanguages: audioLanguageSelect.options,
+            subtitlePriorityKeywords: defaultsMultiSelect.defaultPriorityKeywords,
+        };
+
+        // Define special actions for the "clear" and "all" selections.
+        const specialActions = {
+            clear: () => updateStorage({ [storageKey]: defaultValues[storageKey] }),
+            all: () =>
+                updateStorage({
+                    [storageKey]: (optionsMapping[storageKey] || []).map((opt) => opt.value)
+                })
+        };
+
+        // Check for special action.
+        if (specialActions[selectedOption.value]) {
+            specialActions[selectedOption.value]();
+            return;
+        }
+
+        if (selectedOption.value === 'any') {
+            specialActions['clear']();
+            return;
+        }
+
+        // Otherwise, toggle the value in the selection.
+        let currentValues = storage[storageKey] || [];
+        currentValues = currentValues.filter((value) => value !== 'Disabled' && value !== 'any');
+        const alreadySelected = currentValues.includes(selectedOption.value);
+        const updatedList = alreadySelected
+            ? currentValues.filter((val) => val !== selectedOption.value)
+            : [...currentValues, selectedOption.value];
+
+        if (updatedList.length > 0)
+            updateStorage({ [storageKey]: updatedList });
+    }, [storage]);
+
     const sideMenuButtonOnClick = React.useCallback((event) => {
         const section = sections.find((section) => {
             return section.id === event.currentTarget.dataset.section;
@@ -179,8 +241,11 @@ const Settings = () => {
                     <Button className={classnames(styles['side-menu-button'], { [styles['selected']]: selectedSectionId === SHORTCUTS_SECTION })} title={ t('SETTINGS_NAV_SHORTCUTS') } data-section={SHORTCUTS_SECTION} onClick={sideMenuButtonOnClick}>
                         { t('SETTINGS_NAV_SHORTCUTS') }
                     </Button>
+                    <Button className={classnames(styles['side-menu-button'], { [styles['selected']]: selectedSectionId === PLAYER_SHORTCUTS_SECTION })} title={ t('SETTINGS_NAV_SHORTCUTS') } data-section={PLAYER_SHORTCUTS_SECTION} onClick={sideMenuButtonOnClick}>
+                        { 'Player Shortcuts' }
+                    </Button>
                     <div className={styles['spacing']} />
-                    <div className={styles['version-info-label']} title={process.env.VERSION}>App Version: {process.env.VERSION}</div>
+                    <div className={styles['version-info-label']} title={process.env.VERSION}>App Version: {process.env.VERSION + '.' + process.env.SUB_VERSION}</div>
                     {
                         streamingServer.settings !== null && streamingServer.settings.type === 'Ready' ?
                             <div className={styles['version-info-label']} title={streamingServer.settings.content.serverVersion}>Server Version: {streamingServer.settings.content.serverVersion}</div>
@@ -194,7 +259,8 @@ const Settings = () => {
                             null
                     }
                 </div>
-                <div ref={sectionsContainerRef} className={styles['sections-container']} onScroll={sectionsContainerOnScroll}>
+                <div ref={sectionsContainerRef} className={styles['sections-container']}
+                    onScroll={sectionsContainerOnScroll}>
                     <div ref={generalSectionRef} className={styles['section-container']}>
                         <div className={classnames(styles['option-container'], styles['user-info-option-container'])}>
                             <div className={styles['user-info-content']}>
@@ -211,15 +277,17 @@ const Settings = () => {
                                     }}
                                 />
                                 <div className={styles['email-logout-container']}>
-                                    <div className={styles['email-label-container']} title={profile.auth === null ? 'Anonymous user' : profile.auth.user.email}>
+                                    <div className={styles['email-label-container']}
+                                        title={profile.auth === null ? 'Anonymous user' : profile.auth.user.email}>
                                         <div className={styles['email-label']}>
                                             {profile.auth === null ? 'Anonymous user' : profile.auth.user.email}
                                         </div>
                                     </div>
                                     {
                                         profile.auth !== null ?
-                                            <Button className={styles['logout-button-container']} title={ t('LOG_OUT') } onClick={logoutButtonOnClick}>
-                                                <div className={styles['logout-label']}>{ t('LOG_OUT') }</div>
+                                            <Button className={styles['logout-button-container']} title={t('LOG_OUT')}
+                                                onClick={logoutButtonOnClick}>
+                                                <div className={styles['logout-label']}>{t('LOG_OUT')}</div>
                                             </Button>
                                             :
                                             null
@@ -230,8 +298,10 @@ const Settings = () => {
                         {
                             profile.auth === null ?
                                 <div className={styles['option-container']}>
-                                    <Button className={classnames(styles['option-input-container'], styles['button-container'])} title={`${t('LOG_IN')} / ${t('SIGN_UP')}`} href={'#/intro'}>
-                                        <div className={styles['label']}>{ t('LOG_IN') } / { t('SIGN_UP') }</div>
+                                    <Button
+                                        className={classnames(styles['option-input-container'], styles['button-container'])}
+                                        title={`${t('LOG_IN')} / ${t('SIGN_UP')}`} href={'#/intro'}>
+                                        <div className={styles['label']}>{t('LOG_IN')} / {t('SIGN_UP')}</div>
                                     </Button>
                                 </div>
                                 :
@@ -358,7 +428,43 @@ const Settings = () => {
                             </div>
                             <Multiselect
                                 className={classnames(styles['option-input-container'], styles['multiselect-container'])}
-                                {...subtitlesLanguageSelect}
+                                options={[{value: 'clear', label: 'Clear All'}, ...subtitlesLanguageSelect.options]}
+                                multiSelect={true}
+                                showIndex={true}
+                                selected={storage.defaultSubtitleLanguages}
+                                onSelect={updateStorageStringList('defaultSubtitleLanguages')}
+                            />
+                        </div>
+                        <div className={styles['option-container']}>
+                            <div className={styles['option-name-container']}>
+                                <div className={styles['label']}>{'Allowed Subtitles Language'}</div>
+                            </div>
+                            <Multiselect
+                                className={classnames(styles['option-input-container'], styles['multiselect-container'])}
+                                options={[
+                                    {value: 'all', label: 'Select All'},
+                                    {value: 'any', label: 'Any Language'},
+                                    ...subtitlesLanguageSelect.options]}
+                                multiSelect={true}
+                                selected={storage.allowedSubtitleLanguages}
+                                onSelect={updateStorageStringList('allowedSubtitleLanguages')}
+                            />
+                        </div>
+                        <div className={styles['option-container']}>
+                            <div className={styles['option-name-container']}>
+                                <div className={styles['label']}>{'Subtitles Keywords Prioritization'}</div>
+                            </div>
+                            <Multiselect
+                                className={classnames(styles['option-input-container'], styles['multiselect-container'])}
+                                options={[
+                                    {value: 'all', label: 'Select All'},
+                                    {value: 'clear', label: 'Clear All'},
+                                    ...defaultsMultiSelect.defaultPriorityKeywords
+                                ]}
+                                multiSelect={true}
+                                showIndex={true}
+                                selected={storage.subtitlePriorityKeywords}
+                                onSelect={updateStorageStringList('subtitlePriorityKeywords')}
                             />
                         </div>
                         {
@@ -419,16 +525,35 @@ const Settings = () => {
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{t('SETTINGS_DEFAULT_AUDIO_TRACK') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_DEFAULT_AUDIO_TRACK')}</div>
                             </div>
                             <Multiselect
                                 className={classnames(styles['option-input-container'], styles['multiselect-container'])}
-                                {...audioLanguageSelect}
+                                options={[{value: 'clear', label: 'Clear All'}, ...audioLanguageSelect.options]}
+                                multiSelect={true}
+                                showIndex={true}
+                                selected={storage.defaultAudioLanguages}
+                                onSelect={updateStorageStringList('defaultAudioLanguages')}
                             />
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SURROUND_SOUND') }</div>
+                                <div className={styles['label']}>{'Allowed Audio Language'}</div>
+                            </div>
+                            <Multiselect
+                                className={classnames(styles['option-input-container'], styles['multiselect-container'])}
+                                options={[
+                                    {value: 'all', label: 'Select All'},
+                                    {value: 'any', label: 'Any Language'},
+                                    ...audioLanguageSelect.options]}
+                                multiSelect={true}
+                                selected={storage.allowedAudioLanguages}
+                                onSelect={updateStorageStringList('allowedAudioLanguages')}
+                            />
+                        </div>
+                        <div className={styles['option-container']}>
+                            <div className={styles['option-name-container']}>
+                                <div className={styles['label']}>{t('SETTINGS_SURROUND_SOUND')}</div>
                             </div>
                             <Toggle
                                 className={classnames(styles['option-input-container'], styles['toggle-container'])}
@@ -439,12 +564,12 @@ const Settings = () => {
                     </div>
                     <div className={styles['section-container']}>
                         <div className={styles['section-category-container']}>
-                            <Icon className={styles['icon']} name={'remote'} />
+                            <Icon className={styles['icon']} name={'remote'}/>
                             <div className={styles['label']}>{t('SETTINGS_SECTION_CONTROLS')}</div>
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SEEK_KEY') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SEEK_KEY')}</div>
                             </div>
                             <Multiselect
                                 className={classnames(styles['option-input-container'], styles['multiselect-container'])}
@@ -453,7 +578,7 @@ const Settings = () => {
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SEEK_KEY_SHIFT') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SEEK_KEY_SHIFT')}</div>
                             </div>
                             <Multiselect
                                 className={classnames(styles['option-input-container'], styles['multiselect-container'])}
@@ -462,11 +587,11 @@ const Settings = () => {
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_PLAY_IN_BACKGROUND') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_PLAY_IN_BACKGROUND')}</div>
                             </div>
                             <Toggle
                                 className={classnames(styles['option-input-container'], styles['toggle-container'])}
-                                disabled={true}
+                                disabled={!shell.active}
                                 tabIndex={-1}
                                 {...playInBackgroundToggle}
                             />
@@ -474,12 +599,12 @@ const Settings = () => {
                     </div>
                     <div className={styles['section-container']}>
                         <div className={styles['section-category-container']}>
-                            <Icon className={styles['icon']} name={'play'} />
+                            <Icon className={styles['icon']} name={'play'}/>
                             <div className={styles['label']}>{t('SETTINGS_SECTION_AUTO_PLAY')}</div>
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('AUTO_PLAY') }</div>
+                                <div className={styles['label']}>{t('AUTO_PLAY')}</div>
                             </div>
                             <Toggle
                                 className={classnames(styles['option-input-container'], styles['toggle-container'])}
@@ -488,7 +613,7 @@ const Settings = () => {
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_NEXT_VIDEO_POPUP_DURATION') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_NEXT_VIDEO_POPUP_DURATION')}</div>
                             </div>
                             <Multiselect
                                 className={classnames(styles['option-input-container'], styles['multiselect-container'])}
@@ -499,12 +624,12 @@ const Settings = () => {
                     </div>
                     <div className={styles['section-container']}>
                         <div className={styles['section-category-container']}>
-                            <Icon className={styles['icon']} name={'glasses'} />
+                            <Icon className={styles['icon']} name={'glasses'}/>
                             <div className={styles['label']}>{t('SETTINGS_SECTION_ADVANCED')}</div>
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_PLAY_IN_EXTERNAL_PLAYER') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_PLAY_IN_EXTERNAL_PLAYER')}</div>
                             </div>
                             <Multiselect
                                 className={classnames(styles['option-input-container'], styles['multiselect-container'])}
@@ -513,7 +638,7 @@ const Settings = () => {
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_HWDEC') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_HWDEC')}</div>
                             </div>
                             <Toggle
                                 className={classnames(styles['option-input-container'], styles['toggle-container'])}
@@ -522,20 +647,34 @@ const Settings = () => {
                                 {...hardwareDecodingToggle}
                             />
                         </div>
+                        <div className={styles['option-container']}>
+                            <div className={styles['option-name-container']}>
+                                <div className={styles['label']}>{'Remember Track Selection'}</div>
+                            </div>
+                            <Toggle
+                                className={classnames(styles['option-input-container'], styles['toggle-container'])}
+                                tabIndex={-1}
+                                checked={storage.rememberTrackSelection}
+                                onClick={() => updateStorage({rememberTrackSelection: !storage.rememberTrackSelection})}
+                            />
+                        </div>
                     </div>
                     <div ref={streamingServerSectionRef} className={styles['section-container']}>
-                        <div className={styles['section-title']}>{ t('SETTINGS_NAV_STREAMING') }</div>
-                        <URLsManager />
+                        <div className={styles['section-title']}>{t('SETTINGS_NAV_STREAMING')}</div>
+                        <URLsManager/>
                         {
                             streamingServerRemoteUrlInput.value !== null ?
                                 <div className={styles['option-container']}>
                                     <div className={styles['option-name-container']}>
                                         <div className={styles['label']}>{t('SETTINGS_REMOTE_URL')}</div>
                                     </div>
-                                    <div className={classnames(styles['option-input-container'], styles['configure-input-container'])}>
-                                        <div className={styles['label']} title={streamingServerRemoteUrlInput.value}>{streamingServerRemoteUrlInput.value}</div>
-                                        <Button className={styles['configure-button-container']} title={t('SETTINGS_COPY_REMOTE_URL')} onClick={onCopyRemoteUrlClick}>
-                                            <Icon className={styles['icon']} name={'link'} />
+                                    <div
+                                        className={classnames(styles['option-input-container'], styles['configure-input-container'])}>
+                                        <div className={styles['label']}
+                                            title={streamingServerRemoteUrlInput.value}>{streamingServerRemoteUrlInput.value}</div>
+                                        <Button className={styles['configure-button-container']}
+                                            title={t('SETTINGS_COPY_REMOTE_URL')} onClick={onCopyRemoteUrlClick}>
+                                            <Icon className={styles['icon']} name={'link'}/>
                                         </Button>
                                     </div>
                                 </div>
@@ -546,7 +685,7 @@ const Settings = () => {
                             profile.auth !== null && profile.auth.user !== null && remoteEndpointSelect !== null ?
                                 <div className={styles['option-container']}>
                                     <div className={styles['option-name-container']}>
-                                        <div className={styles['label']}>{ t('SETTINGS_HTTPS_ENDPOINT') }</div>
+                                        <div className={styles['label']}>{t('SETTINGS_HTTPS_ENDPOINT')}</div>
                                     </div>
                                     <Multiselect
                                         className={classnames(styles['option-input-container'], styles['multiselect-container'])}
@@ -560,7 +699,7 @@ const Settings = () => {
                             cacheSizeSelect !== null ?
                                 <div className={styles['option-container']}>
                                     <div className={styles['option-name-container']}>
-                                        <div className={styles['label']}>{ t('SETTINGS_SERVER_CACHE_SIZE') }</div>
+                                        <div className={styles['label']}>{t('SETTINGS_SERVER_CACHE_SIZE')}</div>
                                     </div>
                                     <Multiselect
                                         className={classnames(styles['option-input-container'], styles['multiselect-container'])}
@@ -574,7 +713,7 @@ const Settings = () => {
                             torrentProfileSelect !== null ?
                                 <div className={styles['option-container']}>
                                     <div className={styles['option-name-container']}>
-                                        <div className={styles['label']}>{ t('SETTINGS_SERVER_TORRENT_PROFILE') }</div>
+                                        <div className={styles['label']}>{t('SETTINGS_SERVER_TORRENT_PROFILE')}</div>
                                     </div>
                                     <Multiselect
                                         className={classnames(styles['option-input-container'], styles['multiselect-container'])}
@@ -588,7 +727,7 @@ const Settings = () => {
                             transcodingProfileSelect !== null ?
                                 <div className={styles['option-container']}>
                                     <div className={styles['option-name-container']}>
-                                        <div className={styles['label']}>{ t('SETTINGS_TRANSCODE_PROFILE') }</div>
+                                        <div className={styles['label']}>{t('SETTINGS_TRANSCODE_PROFILE')}</div>
                                     </div>
                                     <Multiselect
                                         className={classnames(styles['option-input-container'], styles['multiselect-container'])}
@@ -600,42 +739,42 @@ const Settings = () => {
                         }
                     </div>
                     <div ref={shortcutsSectionRef} className={styles['section-container']}>
-                        <div className={styles['section-title']}>{ t('SETTINGS_NAV_SHORTCUTS') }</div>
+                        <div className={styles['section-title']}>{t('SETTINGS_NAV_SHORTCUTS')}</div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SHORTCUT_PLAY_PAUSE') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SHORTCUT_PLAY_PAUSE')}</div>
                             </div>
                             <div className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
-                                <kbd>{ t('SETTINGS_SHORTCUT_SPACE') }</kbd>
+                                <kbd>{t('SETTINGS_SHORTCUT_SPACE')}</kbd>
                             </div>
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SHORTCUT_SEEK_FORWARD') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SHORTCUT_SEEK_FORWARD')}</div>
                             </div>
                             <div className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
                                 <kbd>→</kbd>
-                                <div className={styles['label']}>{ t('SETTINGS_SHORTCUT_OR') }</div>
-                                <kbd>⇧ { t('SETTINGS_SHORTCUT_SHIFT') }</kbd>
+                                <div className={styles['label']}>{t('SETTINGS_SHORTCUT_OR')}</div>
+                                <kbd>⇧ {t('SETTINGS_SHORTCUT_SHIFT')}</kbd>
                                 <div className={styles['label']}>+</div>
                                 <kbd>→</kbd>
                             </div>
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SHORTCUT_SEEK_BACKWARD') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SHORTCUT_SEEK_BACKWARD')}</div>
                             </div>
                             <div className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
                                 <kbd>←</kbd>
-                                <div className={styles['label']}>{ t('SETTINGS_SHORTCUT_OR') }</div>
-                                <kbd>⇧ { t('SETTINGS_SHORTCUT_SHIFT') }</kbd>
+                                <div className={styles['label']}>{t('SETTINGS_SHORTCUT_OR')}</div>
+                                <kbd>⇧ {t('SETTINGS_SHORTCUT_SHIFT')}</kbd>
                                 <div className={styles['label']}>+</div>
                                 <kbd>←</kbd>
                             </div>
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SHORTCUT_VOLUME_UP') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SHORTCUT_VOLUME_UP')}</div>
                             </div>
                             <div className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
                                 <kbd>↑</kbd>
@@ -643,7 +782,7 @@ const Settings = () => {
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SHORTCUT_VOLUME_DOWN') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SHORTCUT_VOLUME_DOWN')}</div>
                             </div>
                             <div className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
                                 <kbd>↓</kbd>
@@ -651,7 +790,17 @@ const Settings = () => {
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SHORTCUT_MENU_SUBTITLES') }</div>
+                                <div className={styles['label']}>{'Toggle Subtitles'}</div>
+                            </div>
+                            <div className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
+                                <kbd>Ctrl</kbd>
+                                <div className={styles['label']}>+</div>
+                                <kbd>S</kbd>
+                            </div>
+                        </div>
+                        <div className={styles['option-container']}>
+                            <div className={styles['option-name-container']}>
+                                <div className={styles['label']}>{t('SETTINGS_SHORTCUT_MENU_SUBTITLES')}</div>
                             </div>
                             <div className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
                                 <kbd>S</kbd>
@@ -659,7 +808,7 @@ const Settings = () => {
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SHORTCUT_MENU_AUDIO') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SHORTCUT_MENU_AUDIO')}</div>
                             </div>
                             <div className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
                                 <kbd>A</kbd>
@@ -667,7 +816,7 @@ const Settings = () => {
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SHORTCUT_MENU_INFO') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SHORTCUT_MENU_INFO')}</div>
                             </div>
                             <div className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
                                 <kbd>I</kbd>
@@ -675,7 +824,7 @@ const Settings = () => {
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SHORTCUT_MENU_VIDEOS') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SHORTCUT_MENU_VIDEOS')}</div>
                             </div>
                             <div className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
                                 <kbd>V</kbd>
@@ -683,7 +832,7 @@ const Settings = () => {
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SHORTCUT_FULLSCREEN') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SHORTCUT_FULLSCREEN')}</div>
                             </div>
                             <div className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
                                 <kbd>F</kbd>
@@ -691,17 +840,17 @@ const Settings = () => {
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SHORTCUT_NAVIGATE_MENUS') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SHORTCUT_NAVIGATE_MENUS')}</div>
                             </div>
                             <div className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
                                 <kbd>1</kbd>
-                                <div className={styles['label']}>{ t('SETTINGS_SHORTCUT_TO') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SHORTCUT_TO')}</div>
                                 <kbd>6</kbd>
                             </div>
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SHORTCUT_GO_TO_SEARCH') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SHORTCUT_GO_TO_SEARCH')}</div>
                             </div>
                             <div className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
                                 <kbd>0</kbd>
@@ -709,14 +858,86 @@ const Settings = () => {
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{ t('SETTINGS_SHORTCUT_EXIT_BACK') }</div>
+                                <div className={styles['label']}>{t('SETTINGS_SHORTCUT_EXIT_BACK')}</div>
                             </div>
                             <div className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
-                                <kbd>{ t('SETTINGS_SHORTCUT_ESC') }</kbd>
+                                <kbd>{t('SETTINGS_SHORTCUT_ESC')}</kbd>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div ref={shortcutsPlayerSectionRef} className={styles['section-container']}>
+                        <div className={styles['section-title']}>
+                            {'Player Shortcuts'}
+                            <div className={classnames(styles['option-container'], styles['link-container'])}>
+                                <div className={styles['label']}
+                                    style={{color: 'hsla(0, 0%, 75%, 0.5)', display: 'flex', gap: '0.25rem'}}>
+                                    {'Some features requires latest portable config. '}
+                                    <Button
+                                        className={classnames(styles['option-input-container'], styles['link-input-container'])}
+                                        title={'Portable Config Stremio Desktop V5'} target={'_blank'}
+                                        href={'https://github.com/Zaarrg/stremio-desktop-v5#%EF%B8%8F-mpv-configuration'}>
+                                        <div className={styles['label']}>{'More details here.'}</div>
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                        <div className={styles['option-container']}>
+                            <div className={styles['option-name-container']}>
+                                <div className={styles['label']}>{'Anime 4k Shader'}</div>
+                            </div>
+                            <div
+                                className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
+                                <kbd>Ctrl</kbd>
+                                <div className={styles['label']}>+</div>
+                                <kbd>1</kbd>
+                                <div className={styles['label']}>to</div>
+                                <kbd>6</kbd>
+                            </div>
+                        </div>
+                        <div className={styles['option-container']}>
+                            <div className={styles['option-name-container']}>
+                                <div className={styles['label']}>{'Clear Anime 4k Shader'}</div>
+                            </div>
+                            <div
+                                className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
+                                <kbd>Ctrl</kbd>
+                                <div className={styles['label']}>+</div>
+                                <kbd>0</kbd>
+                            </div>
+                        </div>
+                        <div className={styles['option-container']}>
+                            <div className={styles['option-name-container']}>
+                                <div className={styles['label']}>{'AMD FSR Shader'}</div>
+                            </div>
+                            <div
+                                className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
+                                <kbd>Ctrl</kbd>
+                                <div className={styles['label']}>+</div>
+                                <kbd>7</kbd>
+                            </div>
+                        </div>
+                        <div className={styles['option-container']}>
+                            <div className={styles['option-name-container']}>
+                                <div className={styles['label']}>{'Audio Normalization'}</div>
+                            </div>
+                            <div
+                                className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
+                                <kbd>F1</kbd>
+                            </div>
+                        </div>
+                        <div className={styles['option-container']}>
+                            <div className={styles['option-name-container']}>
+                                <div className={styles['label']}>{'Levels of Subtitle modification'}</div>
+                            </div>
+                            <div
+                                className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
+                                <kbd>F2</kbd>
                             </div>
                         </div>
                     </div>
                     <div className={classnames(styles['section-container'], styles['versions-section-container'])}>
+                        <div className={styles['section-title']}>{t('SETTINGS_NAV_SHORTCUTS')}</div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
                                 <div className={styles['label']}>
@@ -725,7 +946,7 @@ const Settings = () => {
                             </div>
                             <div className={classnames(styles['option-input-container'], styles['info-container'])}>
                                 <div className={styles['label']}>
-                                    {process.env.VERSION}
+                                    {process.env.VERSION + '.' + process.env.SUB_VERSION}
                                 </div>
                             </div>
                         </div>
@@ -737,7 +958,8 @@ const Settings = () => {
                                             Server Version
                                         </div>
                                     </div>
-                                    <div className={classnames(styles['option-input-container'], styles['info-container'])}>
+                                    <div
+                                        className={classnames(styles['option-input-container'], styles['info-container'])}>
                                         <div className={styles['label']}>
                                             {streamingServer.settings.content.serverVersion}
                                         </div>
@@ -754,9 +976,10 @@ const Settings = () => {
                                             Shell Version
                                         </div>
                                     </div>
-                                    <div className={classnames(styles['option-input-container'], styles['info-container'])}>
+                                    <div
+                                        className={classnames(styles['option-input-container'], styles['info-container'])}>
                                         <div className={styles['label']}>
-                                            { shell.transport.props.shellVersion }
+                                            {shell.transport.props.shellVersion}
                                         </div>
                                     </div>
                                 </div>
@@ -771,7 +994,7 @@ const Settings = () => {
 };
 
 const SettingsFallback = () => (
-    <MainNavBars className={styles['settings-container']} route={'settings'} />
+    <MainNavBars className={styles['settings-container']} route={'settings'}/>
 );
 
 module.exports = withCoreSuspender(Settings, SettingsFallback);

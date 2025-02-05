@@ -35,7 +35,7 @@ const useProfileSettingsInputs = (profile) => {
         options: Object.keys(languageNames).map((code) => ({
             value: code,
             label: languageNames[code]
-        })),
+        })).sort((a, b) => a.value.localeCompare(b.value)),
         selected: [profile.settings.subtitlesLanguage],
         onSelect: (event) => {
             core.transport.dispatch({
@@ -121,7 +121,7 @@ const useProfileSettingsInputs = (profile) => {
         options: Object.keys(languageNames).map((code) => ({
             value: code,
             label: languageNames[code]
-        })),
+        })).sort((a, b) => a.value.localeCompare(b.value)),
         selected: [profile.settings.audioLanguage],
         onSelect: (event) => {
             core.transport.dispatch({

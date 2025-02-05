@@ -215,6 +215,7 @@ module.exports = (env, argv) => ({
             ...env,
             DEBUG: argv.mode !== 'production',
             VERSION: pachageJson.version,
+            SUB_VERSION: pachageJson.subVersion,
             COMMIT_HASH
         }),
         new webpack.ProvidePlugin({

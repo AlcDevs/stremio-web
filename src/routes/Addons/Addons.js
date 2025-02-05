@@ -123,7 +123,6 @@ const Addons = ({ urlParams, queryParams }) => {
                     });
                 }
                 setExtensionMappings(browserExtensions);
-                console.log(browserExtensions);
             })
             .catch((err) => {
                 console.error('Failed to fetch extension JSON', err);

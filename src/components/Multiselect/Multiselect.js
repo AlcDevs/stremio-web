@@ -10,7 +10,7 @@ const ModalDialog = require('stremio/components/ModalDialog');
 const useBinaryState = require('stremio/common/useBinaryState');
 const styles = require('./styles');
 
-const Multiselect = ({ className, mode, direction, title, disabled, dataset, renderLabelContent, renderLabelText, onOpen, onClose, onSelect, ...props }) => {
+const Multiselect = ({ className, mode, direction, title, disabled, dataset, renderLabelContent, renderLabelText, onOpen, onClose, onSelect, multiSelect, showIndex, ...props }) => {
     const [menuOpen, , closeMenu, toggleMenu] = useBinaryState(false);
     const options = React.useMemo(() => {
         return Array.isArray(props.options) ?
@@ -54,10 +54,10 @@ const Multiselect = ({ className, mode, direction, title, disabled, dataset, ren
             });
         }
 
-        if (!event.nativeEvent.closeMenuPrevented) {
+        if (!multiSelect &&!event.nativeEvent.closeMenuPrevented) {
             closeMenu();
         }
-    }, [dataset, onSelect]);
+    }, [dataset, onSelect, multiSelect]);
     const mountedRef = React.useRef(false);
     React.useLayoutEffect(() => {
         if (mountedRef.current) {
@@ -87,7 +87,7 @@ const Multiselect = ({ className, mode, direction, title, disabled, dataset, ren
                     renderLabelContent()
                     :
                     <React.Fragment>
-                        <div className={styles['label']}>
+                        <div className={styles['label']} style={multiSelect ? {maxWidth: '11.5rem'} : {}}>
                             {
                                 typeof renderLabelText === 'function' ?
                                     renderLabelText()
@@ -117,7 +117,16 @@ const Multiselect = ({ className, mode, direction, title, disabled, dataset, ren
                     options.map(({ label, title, value }) => (
                         <Button key={value} className={classnames(styles['option-container'], { 'selected': selected.includes(value) })} title={typeof title === 'string' ? title : typeof label === 'string' ? label : value} data-value={value} onClick={optionOnClick}>
                             <div className={styles['label']}>{typeof label === 'string' ? label : value}</div>
-                            <div className={styles['icon']} />
+                            {
+                                selected.includes(value) ? (
+                                    showIndex ?
+                                        <div className={styles['index-icon']}>
+                                            {selected.indexOf(value) + 1}
+                                        </div>
+                                        :
+                                        <div className={styles['icon']} />
+                                ) : null
+                            }
                         </Button>
                     ))
                     :
@@ -173,7 +182,9 @@ Multiselect.propTypes = {
     onOpen: PropTypes.func,
     onClose: PropTypes.func,
     onSelect: PropTypes.func,
-    onClick: PropTypes.func
+    onClick: PropTypes.func,
+    multiSelect: PropTypes.bool,
+    showIndex: PropTypes.bool,
 };
 
 module.exports = Multiselect;

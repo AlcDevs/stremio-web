@@ -6,7 +6,7 @@ const { useTranslation } = require('react-i18next');
 const { Router } = require('stremio-router');
 const { Core, Shell, Chromecast, DragAndDrop, KeyboardShortcuts, ServicesProvider } = require('stremio/services');
 const { NotFound } = require('stremio/routes');
-const { PlatformProvider, ToastProvider, TooltipProvider, CONSTANTS, withCoreSuspender } = require('stremio/common');
+const { PlatformProvider, StorageProvider, ToastProvider, TooltipProvider, CONSTANTS, withCoreSuspender } = require('stremio/common');
 const ServicesToaster = require('./ServicesToaster');
 const DeepLinkHandler = require('./DeepLinkHandler');
 const SearchParamsHandler = require('./SearchParamsHandler');
@@ -166,24 +166,26 @@ const App = () => {
                             <ErrorDialog className={styles['error-container']} />
                             :
                             <PlatformProvider>
-                                <ToastProvider className={styles['toasts-container']}>
-                                    <TooltipProvider className={styles['tooltip-container']}>
-                                        {services.shell.active && (
-                                            <>
-                                                <UpdateDialogHandler className={styles['update-container']} />
-                                                <PipHandler />
-                                            </>
-                                        )}
-                                        <ServicesToaster />
-                                        <DeepLinkHandler />
-                                        <SearchParamsHandler />
-                                        <RouterWithProtectedRoutes
-                                            className={styles['router']}
-                                            viewsConfig={routerViewsConfig}
-                                            onPathNotMatch={onPathNotMatch}
-                                        />
-                                    </TooltipProvider>
-                                </ToastProvider>
+                                <StorageProvider>
+                                    <ToastProvider className={styles['toasts-container']}>
+                                        <TooltipProvider className={styles['tooltip-container']}>
+                                            {services.shell.active && (
+                                                <>
+                                                    <UpdateDialogHandler className={styles['update-container']} />
+                                                    <PipHandler />
+                                                </>
+                                            )}
+                                            <ServicesToaster />
+                                            <DeepLinkHandler />
+                                            <SearchParamsHandler />
+                                            <RouterWithProtectedRoutes
+                                                className={styles['router']}
+                                                viewsConfig={routerViewsConfig}
+                                                onPathNotMatch={onPathNotMatch}
+                                            />
+                                        </TooltipProvider>
+                                    </ToastProvider>
+                                </StorageProvider>
                             </PlatformProvider>
                         :
                         <div className={styles['loader-container']} />

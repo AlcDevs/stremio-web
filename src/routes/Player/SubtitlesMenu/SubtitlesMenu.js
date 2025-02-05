@@ -3,7 +3,7 @@
 const React = require('react');
 const PropTypes = require('prop-types');
 const classnames = require('classnames');
-const { CONSTANTS, comparatorWithPriorities, languages } = require('stremio/common');
+const { CONSTANTS, comparatorWithPriorities, languages, useStorage} = require('stremio/common');
 const { Button } = require('stremio/components');
 const DiscreteSelectInput = require('./DiscreteSelectInput');
 const styles = require('./styles');
@@ -18,6 +18,10 @@ const LANGUAGE_PRIORITIES = {
 };
 
 const SubtitlesMenu = React.memo((props) => {
+    const [, updateStorage] = useStorage();
+    const subtitlesDelay = React.useMemo(() => {
+        return props.externalEmbedded ? props.subtitlesDelay : props.extraSubtitlesDelay;
+    }, [props.externalEmbedded, props.subtitlesDelay, props.extraSubtitlesDelay]);
     const subtitlesLanguages = React.useMemo(() => {
         return (Array.isArray(props.subtitlesTracks) ? props.subtitlesTracks : [])
             .concat(Array.isArray(props.extraSubtitlesTracks) ? props.extraSubtitlesTracks : [])
@@ -77,12 +81,12 @@ const SubtitlesMenu = React.memo((props) => {
             }
         } else if (track.embedded) {
             if (typeof props.onSubtitlesTrackSelected === 'function') {
-                localStorage.setItem('subtitleId', track.id);
+                updateStorage({subtitleId: track.id});
                 props.onSubtitlesTrackSelected(track.id);
             }
         } else {
             if (typeof props.onExtraSubtitlesTrackSelected === 'function') {
-                localStorage.setItem('subtitleId', track.id);
+                updateStorage({subtitleId: track.id});
                 props.onExtraSubtitlesTrackSelected(track.id);
             }
         }
@@ -90,27 +94,29 @@ const SubtitlesMenu = React.memo((props) => {
     const subtitlesTrackOnClick = React.useCallback((event) => {
         if (event.currentTarget.dataset.embedded === 'true') {
             if (typeof props.onSubtitlesTrackSelected === 'function') {
-                localStorage.setItem('subtitleId', event.currentTarget.dataset.id);
+                props.setExternalEmbedded(event.currentTarget.dataset.origin !== 'EMBEDDED');
+                props.onSubtitlesDelayChanged(0);
+                updateStorage({subtitleId: event.currentTarget.dataset.id});
                 props.onSubtitlesTrackSelected(event.currentTarget.dataset.id);
             }
         } else {
             if (typeof props.onExtraSubtitlesTrackSelected === 'function') {
-                localStorage.setItem('subtitleId', event.currentTarget.dataset.id);
+                updateStorage({subtitleId: event.currentTarget.dataset.id});
                 props.onExtraSubtitlesTrackSelected(event.currentTarget.dataset.id);
             }
         }
     }, [props.onSubtitlesTrackSelected, props.onExtraSubtitlesTrackSelected]);
     const onSubtitlesDelayChanged = React.useCallback((event) => {
         const delta = event.value === 'increment' ? 250 : -250;
-        if (typeof props.selectedExtraSubtitlesTrackId === 'string') {
-            if (props.extraSubtitlesDelay !== null && !isNaN(props.extraSubtitlesDelay)) {
-                const extraDelay = props.extraSubtitlesDelay + delta;
-                if (typeof props.onExtraSubtitlesDelayChanged === 'function') {
-                    props.onExtraSubtitlesDelayChanged(extraDelay);
+        if (typeof props.selectedExtraSubtitlesTrackId === 'string' || props.externalEmbedded) {
+            if (subtitlesDelay !== null && !isNaN(subtitlesDelay)) {
+                const extraDelay = subtitlesDelay + delta;
+                if (typeof props.onExtraSubtitlesDelayChanged === 'function' || typeof props.onSubtitlesDelayChanged === 'function') {
+                    props.externalEmbedded ? props.onSubtitlesDelayChanged(extraDelay) : props.onExtraSubtitlesDelayChanged(extraDelay);
                 }
             }
         }
-    }, [props.selectedExtraSubtitlesTrackId, props.extraSubtitlesDelay, props.onExtraSubtitlesDelayChanged]);
+    }, [props.externalEmbedded, subtitlesDelay, props.onSubtitlesDelayChanged, props.selectedExtraSubtitlesTrackId, props.onExtraSubtitlesDelayChanged]);
     const onSubtitlesSizeChanged = React.useCallback((event) => {
         const delta = event.value === 'increment' ? 1 : -1;
         if (typeof props.selectedSubtitlesTrackId === 'string') {
@@ -215,8 +221,8 @@ const SubtitlesMenu = React.memo((props) => {
                 <DiscreteSelectInput
                     className={styles['discrete-input']}
                     label={t('DELAY')}
-                    value={typeof props.selectedExtraSubtitlesTrackId === 'string' && props.extraSubtitlesDelay !== null && !isNaN(props.extraSubtitlesDelay) ? `${(props.extraSubtitlesDelay / 1000).toFixed(2)}s` : '--'}
-                    disabled={typeof props.selectedExtraSubtitlesTrackId !== 'string' || props.extraSubtitlesDelay === null || isNaN(props.extraSubtitlesDelay)}
+                    value={(typeof props.selectedExtraSubtitlesTrackId === 'string' || props.externalEmbedded) && subtitlesDelay !== null && !isNaN(subtitlesDelay) ? `${(subtitlesDelay / 1000).toFixed(2)}s` : '--'}
+                    disabled={props.externalEmbedded ? false : (typeof props.selectedExtraSubtitlesTrackId !== 'string' || subtitlesDelay === null || isNaN(subtitlesDelay))}
                     onChange={onSubtitlesDelayChanged}
                 />
                 <DiscreteSelectInput
@@ -282,6 +288,8 @@ SubtitlesMenu.propTypes = {
     selectedSubtitlesTrackId: PropTypes.string,
     subtitlesOffset: PropTypes.number,
     subtitlesSize: PropTypes.number,
+    subtitlesDelay: PropTypes.number,
+    onSubtitlesDelayChanged: PropTypes.func,
     extraSubtitlesTracks: PropTypes.arrayOf(PropTypes.shape({
         id: PropTypes.string.isRequired,
         lang: PropTypes.string.isRequired,
@@ -298,7 +306,9 @@ SubtitlesMenu.propTypes = {
     onSubtitlesSizeChanged: PropTypes.func,
     onExtraSubtitlesOffsetChanged: PropTypes.func,
     onExtraSubtitlesDelayChanged: PropTypes.func,
-    onExtraSubtitlesSizeChanged: PropTypes.func
+    onExtraSubtitlesSizeChanged: PropTypes.func,
+    externalEmbedded: PropTypes.bool,
+    setExternalEmbedded: PropTypes.func
 };
 
 module.exports = SubtitlesMenu;
