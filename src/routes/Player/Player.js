@@ -414,8 +414,14 @@ const Player = ({ urlParams, queryParams }) => {
 
             const lastVideo = storage.lastVideo;
             const lastSubtitleId = storage.subtitleId;
+            if (lastVideo !== urlParams.id) updateStorage({lastVideo: urlParams.id});
 
             if (lastVideo === urlParams.id && lastSubtitleId && storage.rememberTrackSelection) {
+                if (lastSubtitleId === 'off') {
+                    defaultSubtitlesSelected.current = true;
+                    return;
+                }
+
                 const foundSubtitle = video.state.subtitlesTracks.find((track) => track.id === lastSubtitleId);
                 const foundExtraSubtitle = video.state.extraSubtitlesTracks.find((track) => track.id === lastSubtitleId);
 
@@ -445,7 +451,7 @@ const Player = ({ urlParams, queryParams }) => {
     }, [video.state.subtitlesTracks, video.state.extraSubtitlesTracks]);
 
     const autoSelectSubtitlesDebounced = React.useMemo(
-        () => debounce(autoSelectSubtitles, 250),
+        () => debounce(autoSelectSubtitles, 500),
         [autoSelectSubtitles]
     );
 
@@ -790,8 +796,6 @@ const Player = ({ urlParams, queryParams }) => {
             video.events.off('extraSubtitlesTrackLoaded', onExtraSubtitlesTrackLoaded);
             video.events.off('implementationChanged', onImplementationChanged);
             document.removeEventListener('visibilitychange', onVisibilityChange);
-
-            updateStorage({lastVideo: urlParams.id});
         };
     }, []);
 

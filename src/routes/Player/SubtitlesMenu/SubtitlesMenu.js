@@ -74,9 +74,11 @@ const SubtitlesMenu = React.memo((props) => {
             .shift();
         if (!track) {
             if (typeof props.onSubtitlesTrackSelected === 'function') {
+                updateStorage({subtitleId: 'off'});
                 props.onSubtitlesTrackSelected(null);
             }
             if (typeof props.onExtraSubtitlesTrackSelected === 'function') {
+                updateStorage({subtitleId: 'off'});
                 props.onExtraSubtitlesTrackSelected(null);
             }
         } else if (track.embedded) {
