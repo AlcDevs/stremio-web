@@ -22,7 +22,7 @@ const localProfile: StorageData = {
     defaultAudioLanguages: ['eng'],
     allowedSubtitleLanguages: ['any'],
     allowedAudioLanguages: ['any'],
-    rememberTrackSelection: false,
+    rememberTrackSelection: true,
 };
 
 export const defaultsMultiSelect = {
