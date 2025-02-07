@@ -10,6 +10,7 @@ interface StorageData {
     allowedSubtitleLanguages: string[];
     allowedAudioLanguages: string[];
     rememberTrackSelection: boolean;
+    showSubTrackLoadedToast: boolean;
 }
 
 // Central default values for storage data
@@ -23,6 +24,7 @@ const localProfile: StorageData = {
     allowedSubtitleLanguages: ['any'],
     allowedAudioLanguages: ['any'],
     rememberTrackSelection: true,
+    showSubTrackLoadedToast: true,
 };
 
 export const defaultsMultiSelect = {

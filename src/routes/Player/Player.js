@@ -89,6 +89,17 @@ const Player = ({ urlParams, queryParams }) => {
     const defaultAudioTrackSelected = React.useRef(false);
     const [error, setError] = React.useState(null);
 
+    React.useEffect(() => {
+        const trackId = video.state.selectedSubtitlesTrackId;
+        if (!trackId) return;
+        const selectedTrack =
+            video.state.subtitlesTracks.find((track) => track.id === trackId) ||
+            video.state.extraSubtitlesTracks.find((track) => track.id === trackId);
+        if (!selectedTrack) return;
+        const isEmbedded = selectedTrack.origin === 'EMBEDDED';
+        setExternalEmbedded(!isEmbedded);
+    }, [video.state.selectedSubtitlesTrackId]);
+
     const onImplementationChanged = React.useCallback(() => {
         video.setProp('subtitlesSize', settings.subtitlesSize);
         video.setProp('subtitlesOffset', settings.subtitlesOffset);
@@ -139,16 +150,17 @@ const Player = ({ urlParams, queryParams }) => {
         toast.show({
             type: 'success',
             title: t('PLAYER_SUBTITLES_LOADED'),
-            message: t('PLAYER_SUBTITLES_LOADED_EMBEDDED'),
+            message: 'Player loaded subtitles',
             timeout: 3000
         });
     }, []);
 
-    const onExtraSubtitlesTrackLoaded = React.useCallback((track) => {
+    const onSubtitlesTrackChoosen = React.useCallback(() => {
+        if (!storage.showSubTrackLoadedToast) return;
         toast.show({
             type: 'success',
             title: t('PLAYER_SUBTITLES_LOADED'),
-            message: track.exclusive ? t('PLAYER_SUBTITLES_LOADED_EXCLUSIVE') : t('PLAYER_SUBTITLES_LOADED_ORIGIN', { origin: track.origin }),
+            message: 'Subtitle track loaded',
             timeout: 3000
         });
     }, []);
@@ -419,6 +431,7 @@ const Player = ({ urlParams, queryParams }) => {
             if (lastVideo === urlParams.id && lastSubtitleId && storage.rememberTrackSelection) {
                 if (lastSubtitleId === 'off') {
                     defaultSubtitlesSelected.current = true;
+                    onSubtitlesTrackLoaded();
                     return;
                 }
 
@@ -428,10 +441,12 @@ const Player = ({ urlParams, queryParams }) => {
                 if (foundSubtitle) {
                     onSubtitlesTrackSelected(lastSubtitleId);
                     defaultSubtitlesSelected.current = true;
+                    onSubtitlesTrackLoaded();
                     return;
                 } else if (foundExtraSubtitle) {
                     onExtraSubtitlesTrackSelected(lastSubtitleId);
                     defaultSubtitlesSelected.current = true;
+                    onSubtitlesTrackLoaded();
                     return;
                 }
             }
@@ -441,10 +456,12 @@ const Player = ({ urlParams, queryParams }) => {
             if (subtitlesTrack && subtitlesTrack.id) {
                 onSubtitlesTrackSelected(subtitlesTrack.id);
                 updateStorage({subtitleId: subtitlesTrack.id});
+                onSubtitlesTrackLoaded();
                 defaultSubtitlesSelected.current = true;
             } else if (extraSubtitlesTrack && extraSubtitlesTrack.id) {
                 onExtraSubtitlesTrackSelected(extraSubtitlesTrack.id);
                 updateStorage({subtitleId: subtitlesTrack.id});
+                onSubtitlesTrackLoaded();
                 defaultSubtitlesSelected.current = true;
             }
         }
@@ -777,8 +794,6 @@ const Player = ({ urlParams, queryParams }) => {
     React.useEffect(() => {
         video.events.on('error', onError);
         video.events.on('ended', onEnded);
-        video.events.on('subtitlesTrackLoaded', onSubtitlesTrackLoaded);
-        video.events.on('extraSubtitlesTrackLoaded', onExtraSubtitlesTrackLoaded);
         video.events.on('implementationChanged', onImplementationChanged);
         document.addEventListener('visibilitychange', onVisibilityChange);
 
@@ -792,8 +807,6 @@ const Player = ({ urlParams, queryParams }) => {
         return () => {
             video.events.off('error', onError);
             video.events.off('ended', onEnded);
-            video.events.off('subtitlesTrackLoaded', onSubtitlesTrackLoaded);
-            video.events.off('extraSubtitlesTrackLoaded', onExtraSubtitlesTrackLoaded);
             video.events.off('implementationChanged', onImplementationChanged);
             document.removeEventListener('visibilitychange', onVisibilityChange);
         };
@@ -957,6 +970,7 @@ const Player = ({ urlParams, queryParams }) => {
                         onExtraSubtitlesOffsetChanged={onSubtitlesOffsetChanged}
                         onExtraSubtitlesDelayChanged={onExtraSubtitlesDelayChanged}
                         onExtraSubtitlesSizeChanged={onSubtitlesSizeChanged}
+                        onSubtitlesTrackChoosen={onSubtitlesTrackChoosen}
                         externalEmbedded={externalEmbedded}
                         setExternalEmbedded={setExternalEmbedded}
                     />

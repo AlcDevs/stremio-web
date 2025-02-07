@@ -112,11 +112,13 @@ const Addons = ({ urlParams, queryParams }) => {
                 let browserExtensions = [];
                 if (typeof shell?.transport?.props?.BrowserExtensions === 'object') {
                     Object.entries(shell.transport.props.BrowserExtensions).map(([extName, extId]) => {
+                        const manifestData = data[extName.split('_')[0]] || data['fallback'];
                         browserExtensions.push({
                             'manifest': {
                                 id: extId,
                                 version: extName.split('_')[1],
-                                ...data[extName.split('_')[0]]
+                                fallback_name: extName.split('_')[0],
+                                ...manifestData
                             },
                             'installed': true,
                         });
@@ -200,7 +202,7 @@ const Addons = ({ urlParams, queryParams }) => {
                                                     key={index}
                                                     className={classnames(styles['addon'], 'animation-fade-in')}
                                                     id={addon.manifest.id}
-                                                    name={addon.manifest.name}
+                                                    name={addon.manifest.name || addon.manifest.fallback_name}
                                                     version={addon.manifest.version}
                                                     logo={addon.manifest.logo}
                                                     description={addon.manifest.description}

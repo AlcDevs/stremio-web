@@ -658,6 +658,17 @@ const Settings = () => {
                                 onClick={() => updateStorage({rememberTrackSelection: !storage.rememberTrackSelection})}
                             />
                         </div>
+                        <div className={styles['option-container']}>
+                            <div className={styles['option-name-container']}>
+                                <div className={styles['label']}>{'Show Subtitle selected Toast'}</div>
+                            </div>
+                            <Toggle
+                                className={classnames(styles['option-input-container'], styles['toggle-container'])}
+                                tabIndex={-1}
+                                checked={storage.showSubTrackLoadedToast}
+                                onClick={() => updateStorage({showSubTrackLoadedToast: !storage.showSubTrackLoadedToast})}
+                            />
+                        </div>
                     </div>
                     <div ref={streamingServerSectionRef} className={styles['section-container']}>
                         <div className={styles['section-title']}>{t('SETTINGS_NAV_STREAMING')}</div>

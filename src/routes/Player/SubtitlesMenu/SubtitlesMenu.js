@@ -85,26 +85,29 @@ const SubtitlesMenu = React.memo((props) => {
             if (typeof props.onSubtitlesTrackSelected === 'function') {
                 updateStorage({subtitleId: track.id});
                 props.onSubtitlesTrackSelected(track.id);
+                props.onSubtitlesTrackChoosen();
             }
         } else {
             if (typeof props.onExtraSubtitlesTrackSelected === 'function') {
                 updateStorage({subtitleId: track.id});
                 props.onExtraSubtitlesTrackSelected(track.id);
+                props.onSubtitlesTrackChoosen();
             }
         }
     }, [props.subtitlesTracks, props.extraSubtitlesTracks, props.onSubtitlesTrackSelected, props.onExtraSubtitlesTrackSelected]);
     const subtitlesTrackOnClick = React.useCallback((event) => {
         if (event.currentTarget.dataset.embedded === 'true') {
             if (typeof props.onSubtitlesTrackSelected === 'function') {
-                props.setExternalEmbedded(event.currentTarget.dataset.origin !== 'EMBEDDED');
                 props.onSubtitlesDelayChanged(0);
                 updateStorage({subtitleId: event.currentTarget.dataset.id});
                 props.onSubtitlesTrackSelected(event.currentTarget.dataset.id);
+                props.onSubtitlesTrackChoosen();
             }
         } else {
             if (typeof props.onExtraSubtitlesTrackSelected === 'function') {
                 updateStorage({subtitleId: event.currentTarget.dataset.id});
                 props.onExtraSubtitlesTrackSelected(event.currentTarget.dataset.id);
+                props.onSubtitlesTrackChoosen();
             }
         }
     }, [props.onSubtitlesTrackSelected, props.onExtraSubtitlesTrackSelected]);
@@ -310,7 +313,8 @@ SubtitlesMenu.propTypes = {
     onExtraSubtitlesDelayChanged: PropTypes.func,
     onExtraSubtitlesSizeChanged: PropTypes.func,
     externalEmbedded: PropTypes.bool,
-    setExternalEmbedded: PropTypes.func
+    setExternalEmbedded: PropTypes.func,
+    onSubtitlesTrackChoosen: PropTypes.func
 };
 
 module.exports = SubtitlesMenu;
