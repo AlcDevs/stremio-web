@@ -660,7 +660,7 @@ const Settings = () => {
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
-                                <div className={styles['label']}>{'Show Subtitle selected Toast'}</div>
+                                <div className={styles['label']}>{'Show Subtitle Selected Toast'}</div>
                             </div>
                             <Toggle
                                 className={classnames(styles['option-input-container'], styles['toggle-container'])}
@@ -915,6 +915,20 @@ const Settings = () => {
                                 <kbd>Ctrl</kbd>
                                 <div className={styles['label']}>+</div>
                                 <kbd>0</kbd>
+                            </div>
+                        </div>
+                        <div className={styles['option-container']}>
+                            <div className={styles['option-name-container']}>
+                                <div className={styles['label']}>{'Skip Anime Intro'}
+                                    <div className={styles['label']}
+                                        style={{color: 'hsla(0, 0%, 75%, 0.5)', display: 'flex', gap: '0.25rem'}}>
+                                        {'Use after intro starts.'}
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                className={classnames(styles['option-input-container'], styles['shortcut-container'])}>
+                                <kbd>Tab</kbd>
                             </div>
                         </div>
                         <div className={styles['option-container']}>
