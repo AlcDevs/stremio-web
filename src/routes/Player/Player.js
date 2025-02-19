@@ -764,8 +764,15 @@ const Player = ({ urlParams, queryParams }) => {
             }
         };
         const onKeyUp = (event) => {
-            if (event.code === 'ArrowRight' || event.code === 'ArrowLeft' || event.code === 'Numpad6' || event.code === 'Numpad4') {
-                setSeeking(false);
+            switch (event.code) {
+                case 'ArrowRight':
+                case 'ArrowLeft':
+                case 'Numpad6':
+                case 'Numpad4':
+                case 'MediaTrackPrevious':
+                case 'MediaTrackNext':
+                    setSeeking(false);
+                    break;
             }
         };
         const onWheel = ({ deltaY }) => {
