@@ -206,7 +206,7 @@ const Player = ({ urlParams, queryParams }) => {
     }, []);
 
     const onVolumeChangeRequested = React.useCallback((volume) => {
-        video.setProp('volume', volume);
+        video.setProp('volume', Math.min(volume, Number(storage.maxVolume)));
     }, []);
 
     const onSeekRequested = React.useCallback((time) => {

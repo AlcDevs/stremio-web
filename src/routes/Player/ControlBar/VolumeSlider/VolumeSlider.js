@@ -7,8 +7,10 @@ const debounce = require('lodash.debounce');
 const { useRouteFocused } = require('stremio-router');
 const { Slider } = require('stremio/components');
 const styles = require('./styles');
+const {useStorage} = require('stremio/common');
 
 const VolumeSlider = ({ className, volume, onVolumeChangeRequested }) => {
+    const [storage,] = useStorage();
     const disabled = false;
     if (volume === null || isNaN(volume)) {
         if (typeof onVolumeChangeRequested === 'function') {
@@ -55,7 +57,7 @@ const VolumeSlider = ({ className, volume, onVolumeChangeRequested }) => {
                     100
             }
             minimumValue={0}
-            maximumValue={100}
+            maximumValue={Number(storage.maxVolume)}
             disabled={disabled}
             onSlide={onSlide}
             onComplete={onComplete}

@@ -11,6 +11,7 @@ interface StorageData {
     allowedAudioLanguages: string[];
     rememberTrackSelection: boolean;
     showSubTrackLoadedToast: boolean;
+    maxVolume: string;
 }
 
 // Central default values for storage data
@@ -25,12 +26,17 @@ const localProfile: StorageData = {
     allowedAudioLanguages: ['any'],
     rememberTrackSelection: true,
     showSubTrackLoadedToast: true,
+    maxVolume: '130',
 };
 
 export const defaultsMultiSelect = {
     defaultPriorityKeywords: ['full', 'dialogue', 'signs', 'sings', 'songs', 'lyrics'].map((keyword) => ({
         value: keyword,
         label: keyword.charAt(0).toUpperCase() + keyword.slice(1)
+    })),
+    defaultMaxVolume: ['75', '100', '125', '130', '150', '175', '200', '225'].map((keyword) => ({
+        value: keyword,
+        label: keyword + '%'
     })),
 };
 
