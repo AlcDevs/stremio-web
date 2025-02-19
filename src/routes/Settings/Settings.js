@@ -473,6 +473,19 @@ const Settings = () => {
                                 onSelect={updateStorageStringList('subtitlePriorityKeywords')}
                             />
                         </div>
+                        <div className={styles['option-container']}>
+                            <div className={styles['option-name-container']}>
+                                <div className={styles['label']}>{'Subtitles Selection Mode'}</div>
+                            </div>
+                            <Multiselect
+                                className={classnames(styles['option-input-container'], styles['multiselect-container'])}
+                                options={[
+                                    ...defaultsMultiSelect.defaultSubSelectionMode
+                                ]}
+                                selected={[storage.subtitleSelectionMode]}
+                                onSelect={updateStorageValue('subtitleSelectionMode')}
+                            />
+                        </div>
                         {
                             shell.active ?
                                 <div className={styles['option-container']}>

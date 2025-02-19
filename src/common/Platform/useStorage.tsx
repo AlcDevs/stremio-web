@@ -5,6 +5,7 @@ interface StorageData {
     subtitleId: string;
     audioTrackId: string;
     subtitlePriorityKeywords: string[];
+    subtitleSelectionMode: string;
     defaultSubtitleLanguages: string[];
     defaultAudioLanguages: string[];
     allowedSubtitleLanguages: string[];
@@ -20,6 +21,7 @@ const localProfile: StorageData = {
     subtitleId: '',
     audioTrackId: '',
     subtitlePriorityKeywords: ['full', 'dialogue'],
+    subtitleSelectionMode: 'default',
     defaultSubtitleLanguages: ['eng'],
     defaultAudioLanguages: ['eng'],
     allowedSubtitleLanguages: ['any'],
@@ -38,6 +40,20 @@ export const defaultsMultiSelect = {
         value: keyword,
         label: keyword + '%'
     })),
+    defaultSubSelectionMode: [
+        {
+            value: 'default',
+            label: 'Select Default Subtitle'
+        },
+        {
+            value: 'forced',
+            label: 'Select Forced Subtitle'
+        },
+        {
+            value: 'off',
+            label: 'Select Disabled'
+        }
+    ],
 };
 
 interface StorageContextType {

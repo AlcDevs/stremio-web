@@ -450,9 +450,22 @@ const Player = ({ urlParams, queryParams }) => {
                     return;
                 }
             }
-            const subtitlesTrack = findTrackByLanguagesWithPriorityKeywords(video.state.subtitlesTracks, storage.defaultSubtitleLanguages, storage.subtitlePriorityKeywords);
-            const extraSubtitlesTrack = findTrackByLanguagesWithPriorityKeywords(video.state.extraSubtitlesTracks, storage.defaultSubtitleLanguages, storage.subtitlePriorityKeywords);
 
+            if (storage.subtitleSelectionMode === 'off') {
+                defaultSubtitlesSelected.current = true;
+                return;
+            }
+
+            const filterForced = storage.subtitleSelectionMode === 'forced';
+            const availableSubtitles = filterForced
+                ? video.state.subtitlesTracks.filter((t) => t.forced || false)
+                : video.state.subtitlesTracks;
+            const availableExtraSubtitles = filterForced
+                ? video.state.extraSubtitlesTracks.filter((t) => t.forced || false)
+                : video.state.extraSubtitlesTracks;
+
+            const subtitlesTrack = findTrackByLanguagesWithPriorityKeywords(availableSubtitles, storage.defaultSubtitleLanguages, storage.subtitlePriorityKeywords);
+            const extraSubtitlesTrack = findTrackByLanguagesWithPriorityKeywords(availableExtraSubtitles, storage.defaultSubtitleLanguages, storage.subtitlePriorityKeywords);
             if (subtitlesTrack && subtitlesTrack.id) {
                 onSubtitlesTrackSelected(subtitlesTrack.id);
                 updateStorage({subtitleId: subtitlesTrack.id});
