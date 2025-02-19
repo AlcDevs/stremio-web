@@ -56,6 +56,12 @@ const VideosList = ({ className, metaItem, libraryItem, season, seasonOnSelect, 
                 return a.episode - b.episode;
             });
     }, [videos, selectedSeason]);
+    const previousEpisodes = React.useMemo(() => {
+        if (selectedSeason === null) return 0;
+        return videos.filter((video) =>
+            video.season !== null && video.season !== 0 && video.season < selectedSeason
+        ).length;
+    }, [videos, selectedSeason]);
     const [search, setSearch] = React.useState('');
     const searchInputOnChange = React.useCallback((event) => {
         setSearch(event.currentTarget.value);
@@ -136,6 +142,7 @@ const VideosList = ({ className, metaItem, libraryItem, season, seasonOnSelect, 
                                                 title={video.title}
                                                 thumbnail={video.thumbnail}
                                                 episode={video.episode}
+                                                previousEpisodes={previousEpisodes}
                                                 released={video.released}
                                                 upcoming={video.upcoming}
                                                 watched={video.watched}

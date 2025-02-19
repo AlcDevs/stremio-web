@@ -11,7 +11,7 @@ const useBinaryState = require('stremio/common/useBinaryState');
 const VideoPlaceholder = require('./VideoPlaceholder');
 const styles = require('./styles');
 
-const Video = ({ className, id, title, thumbnail, episode, released, upcoming, watched, progress, scheduled, deepLinks, onMarkVideoAsWatched, ...props }) => {
+const Video = ({ className, id, title, thumbnail, episode, previousEpisodes, released, upcoming, watched, progress, scheduled, deepLinks, onMarkVideoAsWatched, ...props }) => {
     const routeFocused = useRouteFocused();
     const [menuOpen, , closeMenu, toggleMenu] = useBinaryState(false);
     const popupLabelOnMouseUp = React.useCallback((event) => {
@@ -59,7 +59,7 @@ const Video = ({ className, id, title, thumbnail, episode, released, upcoming, w
             }
         }
     }, [deepLinks]);
-    const renderLabel = React.useMemo(() => function renderLabel({ className, id, title, thumbnail, episode, released, upcoming, watched, progress, scheduled, children, ...props }) {
+    const renderLabel = React.useMemo(() => function renderLabel({ className, id, title, thumbnail, episode, previousEpisodes, released, upcoming, watched, progress, scheduled, children, ...props }) {
         return (
             <Button {...props} className={classnames(className, styles['video-container'])} title={title}>
                 {
@@ -68,13 +68,41 @@ const Video = ({ className, id, title, thumbnail, episode, released, upcoming, w
                             <Image
                                 className={styles['thumbnail']}
                                 src={thumbnail}
-                                alt={' '}
-                                renderFallback={() => (
-                                    <Icon
-                                        className={styles['placeholder-icon']}
-                                        name={'symbol'}
-                                    />
-                                )}
+                                alt=" "
+                                renderFallback={() => {
+                                    if (
+                                        typeof thumbnail !== 'string' ||
+                                        thumbnail.length === 0 ||
+                                        typeof episode !== 'number' ||
+                                        isNaN(episode) ||
+                                        typeof previousEpisodes !== 'number' ||
+                                        isNaN(previousEpisodes) ||
+                                        previousEpisodes === 0
+                                    ) {
+                                        return <Icon className={styles['placeholder-icon']} name="symbol" />;
+                                    }
+                                    //Fallback correction for Animes
+                                    const correctedEpisode = previousEpisodes + episode;
+                                    // This regex assumes the URL is in the format:
+                                    // protocol://domain/id/season/episode/rest
+                                    const fallbackThumbnail = thumbnail.replace(
+                                        /^(https?:\/\/[^/]+\/[^/]+)\/(\d+)\/(\d+)(\/.*)$/,
+                                        (_, base, origSeason, origEpisode, rest) => {
+                                            // Replace the season with "1" and the episode with the corrected value
+                                            return `${base}/1/${correctedEpisode}${rest}`;
+                                        }
+                                    );
+                                    return (
+                                        <Image
+                                            className={styles['thumbnail']}
+                                            src={fallbackThumbnail}
+                                            alt=" "
+                                            renderFallback={() => (
+                                                <Icon className={styles['placeholder-icon']} name="symbol" />
+                                            )}
+                                        />
+                                    );
+                                }}
                             />
                             {
                                 progress !== null && !isNaN(progress) && progress > 0 ?
@@ -160,6 +188,7 @@ const Video = ({ className, id, title, thumbnail, episode, released, upcoming, w
             released={released}
             upcoming={upcoming}
             watched={watched}
+            previousEpisodes={previousEpisodes}
             progress={progress}
             scheduled={scheduled}
             onClick={videoButtonOnClick}
@@ -183,6 +212,7 @@ Video.propTypes = {
     title: PropTypes.string,
     thumbnail: PropTypes.string,
     episode: PropTypes.number,
+    previousEpisodes: PropTypes.number,
     released: PropTypes.instanceOf(Date),
     upcoming: PropTypes.bool,
     watched: PropTypes.bool,
