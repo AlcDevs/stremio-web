@@ -5,11 +5,13 @@ const PropTypes = require('prop-types');
 const classnames = require('classnames');
 const debounce = require('lodash.debounce');
 const { useRouteFocused } = require('stremio-router');
+const { useServices } = require('stremio/services');
 const { Slider } = require('stremio/components');
 const styles = require('./styles');
 const {useStorage} = require('stremio/common');
 
-const VolumeSlider = ({ className, volume, onVolumeChangeRequested }) => {
+const VolumeSlider = ({ className, volume, onVolumeChangeRequested, muted }) => {
+    const { shell } = useServices();
     const [storage,] = useStorage();
     const disabled = false;
     if (volume === null || isNaN(volume)) {
@@ -19,6 +21,7 @@ const VolumeSlider = ({ className, volume, onVolumeChangeRequested }) => {
     }
     const routeFocused = useRouteFocused();
     const [slidingVolume, setSlidingVolume] = React.useState(null);
+    const maxVolume = shell.active ? Number(storage.maxVolume): 100;
     const resetVolumeDebounced = React.useCallback(debounce(() => {
         setSlidingVolume(null);
     }, 100), []);
@@ -52,15 +55,18 @@ const VolumeSlider = ({ className, volume, onVolumeChangeRequested }) => {
             className={classnames(className, styles['volume-slider'], { 'active': slidingVolume !== null })}
             value={
                 !disabled ?
-                    slidingVolume !== null ? slidingVolume : volume
+                    !muted ?
+                        slidingVolume !== null ? slidingVolume : volume
+                        : 0
                     :
                     100
             }
             minimumValue={0}
-            maximumValue={Number(storage.maxVolume)}
+            maximumValue={maxVolume}
             disabled={disabled}
             onSlide={onSlide}
             onComplete={onComplete}
+            audioBoost={!!shell.active}
         />
     );
 };
@@ -68,7 +74,8 @@ const VolumeSlider = ({ className, volume, onVolumeChangeRequested }) => {
 VolumeSlider.propTypes = {
     className: PropTypes.string,
     volume: PropTypes.number,
-    onVolumeChangeRequested: PropTypes.func
+    onVolumeChangeRequested: PropTypes.func,
+    muted: PropTypes.bool,
 };
 
 module.exports = VolumeSlider;
