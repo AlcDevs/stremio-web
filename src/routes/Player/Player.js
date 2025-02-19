@@ -453,6 +453,7 @@ const Player = ({ urlParams, queryParams }) => {
 
             if (storage.subtitleSelectionMode === 'off') {
                 defaultSubtitlesSelected.current = true;
+                onSubtitlesTrackLoaded();
                 return;
             }
 
@@ -824,6 +825,12 @@ const Player = ({ urlParams, queryParams }) => {
             shell.transport.send('mpv-set-prop', ['hwdec', 'no']);
             shell.transport.send('mpv-set-prop', ['hwdec-codecs', 'h264,vc1,hevc,vp8,vp9,av1,prores']);
         }
+
+        shell.transport.send('mpv-set-prop', ['subs-with-matching-audio', { forced: 'forced', off: 'no', default: 'yes' }[storage.subtitleSelectionMode]]);
+        shell.transport.send('mpv-set-prop', ['subs-match-os-language', 'no']);
+        shell.transport.send('mpv-set-prop', ['subs-fallback', 'no']);
+        shell.transport.send('mpv-set-prop', ['subs-fallback-forced', 'no']);
+
         return () => {
             video.events.off('error', onError);
             video.events.off('ended', onEnded);
