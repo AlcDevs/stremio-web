@@ -165,6 +165,25 @@ const Player = ({ urlParams, queryParams }) => {
         });
     }, []);
 
+    const getAltThumbnail = React.useCallback((video, currentSeason) => {
+        if (currentSeason === null || typeof video.thumbnail !== 'string' || video.thumbnail.length === 0 || typeof video.episode !== 'number' || isNaN(video.episode)) return '';
+        const previousEpisodes = player.metaItem.content.videos.filter((videoData) =>
+            videoData.season !== null && videoData.season !== 0 && videoData.season && videoData.season < currentSeason
+        ).length;
+        if (isNaN(previousEpisodes) || previousEpisodes === 0) return '';
+        //Fallback correction for Animes
+        const correctedEpisode = previousEpisodes + video.episode;
+        // This regex assumes the URL is in the format:
+        // protocol://domain/id/season/episode/rest
+        return video.thumbnail.replace(
+            /^(https?:\/\/[^/]+\/[^/]+)\/(\d+)\/(\d+)(\/.*)$/,
+            (_, base, origSeason, origEpisode, rest) => {
+                // Replace the season with "1" and the episode with the corrected value
+                return `${base}/1/${correctedEpisode}${rest}`;
+            }
+        );
+    }, [player.metaItem]);
+
     const findTrackByLanguagesWithPriorityKeywords = React.useCallback((tracks, languages, priorityKeywords = []) => {
         const lowerKeywords = priorityKeywords.map((keyword) => keyword.toLowerCase());
         for (const lang of languages) {
@@ -951,6 +970,7 @@ const Player = ({ urlParams, queryParams }) => {
                         metaItem={player.metaItem !== null && player.metaItem.type === 'Ready' ? player.metaItem.content : null}
                         nextVideo={player.nextVideo}
                         onDismiss={onDismissNextVideoPopup}
+                        altThumbnail={getAltThumbnail(player.nextVideo, player.seriesInfo.season)}
                         onNextVideoRequested={onNextVideoRequested}
                     />
                     :

@@ -56,12 +56,6 @@ const VideosList = ({ className, metaItem, libraryItem, season, seasonOnSelect, 
                 return a.episode - b.episode;
             });
     }, [videos, selectedSeason]);
-    const previousEpisodes = React.useMemo(() => {
-        if (selectedSeason === null) return 0;
-        return videos.filter((video) =>
-            video.season !== null && video.season !== 0 && video.season < selectedSeason
-        ).length;
-    }, [videos, selectedSeason]);
     const [search, setSearch] = React.useState('');
     const searchInputOnChange = React.useCallback((event) => {
         setSearch(event.currentTarget.value);
@@ -76,6 +70,25 @@ const VideosList = ({ className, metaItem, libraryItem, season, seasonOnSelect, 
             }
         });
     };
+
+    const getAltThumbnail = React.useCallback((video, currentSeason) => {
+        if (currentSeason === null || typeof video.thumbnail !== 'string' || video.thumbnail.length === 0 || typeof video.episode !== 'number' || isNaN(video.episode)) return '';
+        const previousEpisodes = videos.filter((videoData) =>
+            videoData.season !== null && videoData.season !== 0 && videoData.season && videoData.season < currentSeason
+        ).length;
+        if (isNaN(previousEpisodes) || previousEpisodes === 0) return '';
+        //Fallback correction for Animes
+        const correctedEpisode = previousEpisodes + video.episode;
+        // This regex assumes the URL is in the format:
+        // protocol://domain/id/season/episode/rest
+        return video.thumbnail.replace(
+            /^(https?:\/\/[^/]+\/[^/]+)\/(\d+)\/(\d+)(\/.*)$/,
+            (_, base, origSeason, origEpisode, rest) => {
+                // Replace the season with "1" and the episode with the corrected value
+                return `${base}/1/${correctedEpisode}${rest}`;
+            }
+        );
+    }, [videos]);
 
     return (
         <div className={classnames(className, styles['videos-list-container'])}>
@@ -142,7 +155,7 @@ const VideosList = ({ className, metaItem, libraryItem, season, seasonOnSelect, 
                                                 title={video.title}
                                                 thumbnail={video.thumbnail}
                                                 episode={video.episode}
-                                                previousEpisodes={previousEpisodes}
+                                                altThumbnail={getAltThumbnail(video, selectedSeason)}
                                                 released={video.released}
                                                 upcoming={video.upcoming}
                                                 watched={video.watched}
