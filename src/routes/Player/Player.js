@@ -459,10 +459,10 @@ const Player = ({ urlParams, queryParams }) => {
 
             const filterForced = storage.subtitleSelectionMode === 'forced';
             const availableSubtitles = filterForced
-                ? video.state.subtitlesTracks.filter((t) => t.forced || false)
+                ? video.state.subtitlesTracks.filter((t) => t.forced || (t.label && t.label.toLowerCase().includes('forced')))
                 : video.state.subtitlesTracks;
             const availableExtraSubtitles = filterForced
-                ? video.state.extraSubtitlesTracks.filter((t) => t.forced || false)
+                ? video.state.extraSubtitlesTracks.filter((t) => t.forced || (t.label && t.label.toLowerCase().includes('forced')))
                 : video.state.extraSubtitlesTracks;
 
             const subtitlesTrack = findTrackByLanguagesWithPriorityKeywords(availableSubtitles, storage.defaultSubtitleLanguages, storage.subtitlePriorityKeywords);
