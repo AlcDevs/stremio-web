@@ -970,7 +970,7 @@ const Player = ({ urlParams, queryParams }) => {
                         metaItem={player.metaItem !== null && player.metaItem.type === 'Ready' ? player.metaItem.content : null}
                         nextVideo={player.nextVideo}
                         onDismiss={onDismissNextVideoPopup}
-                        altThumbnail={getAltThumbnail(player.nextVideo, player.seriesInfo.season)}
+                        altThumbnail={getAltThumbnail(player?.nextVideo, player.seriesInfo?.season)}
                         onNextVideoRequested={onNextVideoRequested}
                     />
                     :
