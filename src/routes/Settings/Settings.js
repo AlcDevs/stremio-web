@@ -500,6 +500,22 @@ const Settings = () => {
                                 :
                                 null
                         }
+                        {
+                            shell.active ?
+                                <div className={styles['option-container']}>
+                                    <div className={styles['option-name-container']}>
+                                        <div className={styles['label']}>{'Use mpv for external subtitles'}</div>
+                                    </div>
+                                    <Toggle
+                                        className={classnames(styles['option-input-container'], styles['toggle-container'])}
+                                        tabIndex={-1}
+                                        checked={storage.useMpvForExternalSubtitles}
+                                        onClick={() => updateStorage({useMpvForExternalSubtitles: !storage.useMpvForExternalSubtitles})}
+                                    />
+                                </div>
+                                :
+                                null
+                        }
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
                                 <div className={styles['label']}>{t('SETTINGS_SUBTITLES_SIZE')}</div>

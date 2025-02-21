@@ -12,6 +12,7 @@ interface StorageData {
     allowedAudioLanguages: string[];
     rememberTrackSelection: boolean;
     showSubTrackLoadedToast: boolean;
+    useMpvForExternalSubtitles: boolean;
     maxVolume: string;
 }
 
@@ -28,6 +29,7 @@ const localProfile: StorageData = {
     allowedAudioLanguages: ['any'],
     rememberTrackSelection: true,
     showSubTrackLoadedToast: true,
+    useMpvForExternalSubtitles: true,
     maxVolume: '130',
 };
 
