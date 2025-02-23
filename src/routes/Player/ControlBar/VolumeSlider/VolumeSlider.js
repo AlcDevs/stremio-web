@@ -11,12 +11,7 @@ const {useStorage} = require('stremio/common');
 
 const VolumeSlider = ({ className, volume, onVolumeChangeRequested, muted }) => {
     const [storage,] = useStorage();
-    const disabled = false;
-    if (volume === null || isNaN(volume)) {
-        if (typeof onVolumeChangeRequested === 'function') {
-            onVolumeChangeRequested(50);
-        }
-    }
+    const disabled = volume === null || isNaN(volume);
     const routeFocused = useRouteFocused();
     const [slidingVolume, setSlidingVolume] = React.useState(null);
     const maxVolume = Number(storage.maxVolume) || 100;
@@ -57,11 +52,11 @@ const VolumeSlider = ({ className, volume, onVolumeChangeRequested, muted }) => 
                         slidingVolume !== null ? slidingVolume : volume
                         : 0
                     :
-                    100
+                    50
             }
             minimumValue={0}
             maximumValue={maxVolume}
-            disabled={disabled}
+            disabled={false}
             onSlide={onSlide}
             onComplete={onComplete}
             audioBoost={false}
