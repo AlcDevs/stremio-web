@@ -9,7 +9,7 @@ const { Button, Image, Multiselect } = require('stremio/components');
 const { useServices } = require('stremio/services');
 const Stream = require('./Stream');
 const styles = require('./styles');
-const { usePlatform, useProfile } = require('stremio/common');
+const { usePlatform} = require('stremio/common');
 const { default: SeasonEpisodePicker } = require('../EpisodePicker');
 
 const ALL_ADDONS_KEY = 'ALL';
@@ -24,9 +24,6 @@ const StreamsList = ({ className, video, type, onEpisodeSearch, ...props }) => {
         streamsContainerRef.current.scrollTo({ top: 0, left: 0, behavior: platform.name === 'ios' ? 'smooth' : 'instant' });
         setSelectedAddon(event.value);
     }, [platform]);
-    const showInstallAddonsButton = React.useMemo(() => {
-        return !profile || profile.auth === null || profile.auth?.user?.isNewUser === true && !video?.upcoming;
-    }, [profile, video]);
     const backButtonOnClick = React.useCallback(() => {
         if (video.deepLinks && typeof video.deepLinks.metaDetailsVideos === 'string') {
             window.location.replace(video.deepLinks.metaDetailsVideos + (

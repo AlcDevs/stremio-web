@@ -119,17 +119,8 @@ const Player = ({ urlParams, queryParams }) => {
         video.setProp('extraSubtitlesOutlineColor', settings.subtitlesOutlineColor);
     }, [settings.subtitlesSize, settings.subtitlesOffset, settings.subtitlesTextColor, settings.subtitlesBackgroundColor, settings.subtitlesOutlineColor]);
 
-    const handleNextVideoNavigation = React.useCallback((deepLinks) => {
-        if (deepLinks.player) {
-            isNavigating.current = true;
-            window.location.replace(deepLinks.player);
-        } else if (deepLinks.metaDetailsStreams) {
-            isNavigating.current = true;
-            window.location.replace(deepLinks.metaDetailsStreams);
-        }
-    }, []);
-
     const onEnded = React.useCallback(() => {
+        player.nextVideo = nextVideoInitialData.current;
         if (isNavigating.current) {
             return;
         }
@@ -296,9 +287,14 @@ const Player = ({ urlParams, queryParams }) => {
             nextVideo();
 
             const deepLinks = player.nextVideo.deepLinks;
-            handleNextVideoNavigation(deepLinks);
+            if (deepLinks.metaDetailsStreams && deepLinks.player) {
+                window.location.replace(deepLinks.metaDetailsStreams);
+                window.location.href = deepLinks.player;
+            } else {
+                window.location.replace(deepLinks.player ?? deepLinks.metaDetailsStreams);
+            }
         }
-    }, [player.nextVideo, handleNextVideoNavigation]);
+    }, [player.nextVideo]);
 
     const onVideoClick = React.useCallback(() => {
         if (video.state.paused !== null) {
@@ -811,7 +807,7 @@ const Player = ({ urlParams, queryParams }) => {
                     }
 
                     if (finalKey && shell.active) {
-                        shell.transport.send('mpv-command', ['keypress', finalKey]);
+                        shell.send('mpv-command', ['keypress', finalKey]);
                     }
                     break;
                 }
@@ -857,17 +853,17 @@ const Player = ({ urlParams, queryParams }) => {
         document.addEventListener('visibilitychange', onVisibilityChange);
 
         if (shell.active && profile.settings.hardwareDecoding) {
-            shell.transport.send('mpv-set-prop', ['hwdec', 'auto-safe']);
-            shell.transport.send('mpv-set-prop', ['hwdec-codecs', 'all']);
+            shell.send('mpv-set-prop', ['hwdec', 'auto-safe']);
+            shell.send('mpv-set-prop', ['hwdec-codecs', 'all']);
         } else if (shell.active) {
-            shell.transport.send('mpv-set-prop', ['hwdec', 'no']);
-            shell.transport.send('mpv-set-prop', ['hwdec-codecs', 'h264,vc1,hevc,vp8,vp9,av1,prores']);
+            shell.send('mpv-set-prop', ['hwdec', 'no']);
+            shell.send('mpv-set-prop', ['hwdec-codecs', 'h264,vc1,hevc,vp8,vp9,av1,prores']);
         }
 
-        shell.transport.send('mpv-set-prop', ['subs-with-matching-audio', { forced: 'forced', off: 'no', default: 'yes' }[storage.subtitleSelectionMode]]);
-        shell.transport.send('mpv-set-prop', ['subs-match-os-language', 'no']);
-        shell.transport.send('mpv-set-prop', ['subs-fallback', 'no']);
-        shell.transport.send('mpv-set-prop', ['subs-fallback-forced', 'no']);
+        shell.send('mpv-set-prop', ['subs-with-matching-audio', { forced: 'forced', off: 'no', default: 'yes' }[storage.subtitleSelectionMode]]);
+        shell.send('mpv-set-prop', ['subs-match-os-language', 'no']);
+        shell.send('mpv-set-prop', ['subs-fallback', 'no']);
+        shell.send('mpv-set-prop', ['subs-fallback-forced', 'no']);
 
         return () => {
             video.events.off('error', onError);
@@ -892,7 +888,7 @@ const Player = ({ urlParams, queryParams }) => {
             onMouseOver={onContainerMouseMove}
             onMouseLeave={onContainerMouseLeave}>
             <Video
-                ref={video.containerRef}
+                ref={video.containerElement}
                 className={styles['layer']}
                 onClick={onVideoClick}
                 onDoubleClick={onVideoDoubleClick}
@@ -941,7 +937,7 @@ const Player = ({ urlParams, queryParams }) => {
                     :
                     null
             }
-            <ContextMenu on={[video.containerRef, bufferingRef, errorRef]} autoClose>
+            <ContextMenu on={[video.containerElement, bufferingRef, errorRef]} autoClose>
                 <OptionsMenu
                     className={classnames(styles['layer'], styles['menu-layer'])}
                     stream={player?.selected?.stream}
