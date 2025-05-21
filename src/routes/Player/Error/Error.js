@@ -8,7 +8,7 @@ const { default: Icon } = require('@stremio/stremio-icons/react');
 const { Button } = require('stremio/components');
 const styles = require('./styles');
 
-const Error = ({ className, code, message, stream }) => {
+const Error = React.forwardRef(({ className, code, message, stream }, ref) => {
     const { t } = useTranslation();
 
     const [playlist, fileName] = React.useMemo(() => {
@@ -19,7 +19,7 @@ const Error = ({ className, code, message, stream }) => {
     }, [stream]);
 
     return (
-        <div className={classNames(className, styles['error'])}>
+        <div ref={ref} className={classNames(className, styles['error'])}>
             <div className={styles['error-label']} title={message}>{message}</div>
             {
                 code === 2 ?
@@ -44,7 +44,7 @@ const Error = ({ className, code, message, stream }) => {
             }
         </div>
     );
-};
+});
 
 Error.propTypes = {
     className: PropTypes.string,

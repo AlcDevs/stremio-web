@@ -4,6 +4,7 @@ import Button from './Button';
 import Checkbox from './Checkbox';
 import Chips from './Chips';
 import ColorInput from './ColorInput';
+import ContextMenu from './ContextMenu';
 import ContinueWatchingItem from './ContinueWatchingItem';
 import DelayedRenderer from './DelayedRenderer';
 import EventModal from './EventModal';
@@ -18,6 +19,7 @@ import ModalDialog from './ModalDialog';
 import Multiselect from './Multiselect';
 import MultiselectMenu from './MultiselectMenu';
 import { HorizontalNavBar, VerticalNavBar } from './NavBar';
+import NumberInput from './NumberInput';
 import Popup from './Popup';
 import RadioButton from './RadioButton';
 import SearchBar from './SearchBar';
@@ -35,6 +37,7 @@ export {
     Checkbox,
     Chips,
     ColorInput,
+    ContextMenu,
     ContinueWatchingItem,
     DelayedRenderer,
     EventModal,
@@ -50,6 +53,7 @@ export {
     MultiselectMenu,
     HorizontalNavBar,
     VerticalNavBar,
+    NumberInput,
     Popup,
     RadioButton,
     SearchBar,

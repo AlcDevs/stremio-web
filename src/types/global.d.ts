@@ -1,15 +1,31 @@
 /* eslint-disable no-var */
 
+type QtTransportMessage = {
+    data: string;
+};
+
 interface QtTransport {
     send: (message: string) => void,
+    onmessage: (message: QtTransportMessage) => void,
 }
 
 interface Qt {
     webChannelTransport: QtTransport,
 }
 
-declare global {
-    var qt: Qt | undefined;
+interface ChromeWebView {
+    addEventListener: (type: 'message', listenenr: (event: any) => void) => void,
+    removeEventListener: (type: 'message', listenenr: (event: any) => void) => void,
+    postMessage: (message: string) => void,
 }
 
-export { };
+interface Chrome {
+    webview: ChromeWebView,
+}
+
+declare global {
+    var qt: Qt | undefined;
+    var chrome: Chrome | undefined;
+}
+
+export {};

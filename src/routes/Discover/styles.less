@@ -59,7 +59,9 @@
                         display: none;
 
                         &~.filter-container {
-                            display: flex;
+                            .filter-button {
+                                display: flex;
+                            }
                         }
                     }
 
@@ -69,20 +71,27 @@
                 }
 
                 .filter-container {
-                    flex: none;
-                    display: none;
-                    align-items: center;
-                    justify-content: center;
-                    width: 3rem;
-                    height: 3rem;
-                    border-radius: var(--border-radius);
-                    background-color: var(--overlay-color);
+                    display: flex;
+                    flex: 1 0 5rem;
+                    justify-content: flex-end;
 
-                    .filter-icon {
+                    .filter-button {
                         flex: none;
-                        width: 1.4rem;
-                        height: 1.4rem;
-                        color: var(--primary-foreground-color);
+                        display: none;
+                        align-items: center;
+                        justify-content: center;
+                        width: 3rem;
+                        height: 3rem;
+                        margin-left: 1.5rem;
+                        border-radius: var(--border-radius);
+                        background-color: var(--overlay-color);
+
+                        .filter-icon {
+                            flex: none;
+                            width: 1.4rem;
+                            height: 1.4rem;
+                            color: var(--primary-foreground-color);
+                        }
                     }
                 }
             }
@@ -219,9 +228,14 @@
 
             .select-input {
                 height: 3.5rem;
+                display: none;
 
-                &:not(:last-child) {
-                    margin-bottom: 1rem;
+                &:nth-child(n+4) {
+                    display: flex;
+
+                    &:not(:last-child) {
+                        margin-bottom: 1rem;
+                    }
                 }
 
                 .multiselect-menu-container {
@@ -363,7 +377,9 @@
                             display: none;
 
                             &~.filter-container {
-                                display: flex;
+                                .filter-button {
+                                    display: flex;
+                                }
                             }
                         }
                     }
@@ -371,6 +387,24 @@
 
                 .meta-items-container {
                     grid-template-columns: repeat(3, 1fr);
+                }
+            }
+        }
+    }
+
+    .selectable-inputs-modal {
+        .selectable-inputs-modal-container {
+            .selectable-inputs-modal-content {
+                .select-input {
+                    display: none;
+
+                    &:nth-child(n+2) {
+                        display: flex;
+
+                        &:not(:last-child) {
+                            margin-bottom: 1rem;
+                        }
+                    }
                 }
             }
         }

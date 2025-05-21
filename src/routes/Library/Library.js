@@ -5,7 +5,8 @@ const PropTypes = require('prop-types');
 const classnames = require('classnames');
 const NotFound = require('stremio/routes/NotFound');
 const { useProfile, useNotifications, routesRegexp, useOnScrollToBottom, withCoreSuspender } = require('stremio/common');
-const { Button, DelayedRenderer, Chips, Image, MainNavBars, Multiselect, LibItem } = require('stremio/components');
+const { DelayedRenderer, Chips, Image, MainNavBars, Multiselect, LibItem } = require('stremio/components');
+const { default: Placeholder } = require('./Placeholder');
 const useLibrary = require('./useLibrary');
 const useSelectableInputs = require('./useSelectableInputs');
 const styles = require('./styles');
@@ -58,65 +59,59 @@ const Library = ({ model, urlParams, queryParams }) => {
     }, [hasNextPage, loadNextPage]);
     const onScroll = useOnScrollToBottom(onScrollToBottom, SCROLL_TO_BOTTOM_TRESHOLD);
     React.useLayoutEffect(() => {
-        if (profile.auth !== null && library.selected && library.selected.request.page === 1 && library.catalog.length !== 0 ) {
+        if (scrollContainerRef.current !== null && library.selected && library.selected.request.page === 1 && library.catalog.length !== 0) {
             scrollContainerRef.current.scrollTop = 0;
         }
     }, [profile.auth, library.selected]);
+    React.useEffect(() => {
+        if (!library.selected?.type && typeSelect.selected) {
+            window.location = typeSelect.selected[0];
+        }
+    }, [typeSelect.selected, library.selected]);
     return (
         <MainNavBars className={styles['library-container']} route={model}>
-            <div className={styles['library-content']}>
-                {
-                    model === 'continue_watching' || profile.auth !== null ?
+            {
+                profile.auth !== null ?
+                    <div className={styles['library-content']}>
                         <div className={styles['selectable-inputs-container']}>
                             <Multiselect {...typeSelect} className={styles['select-input-container']} />
                             <Chips {...sortChips} className={styles['select-input-container']} />
                         </div>
-                        :
-                        null
-                }
-                {
-                    model === 'library' && profile.auth === null ?
-                        <div className={classnames(styles['message-container'], styles['no-user-message-container'])}>
-                            <Image
-                                className={styles['image']}
-                                src={require('/images/anonymous.png')}
-                                alt={' '}
-                            />
-                            <div className={styles['message-label']}>Library is only available for logged in users!</div>
-                            <Button className={styles['login-button-container']} href={'#/intro'}>
-                                <div className={styles['label']}>LOG IN</div>
-                            </Button>
-                        </div>
-                        :
-                        library.selected === null ?
-                            <DelayedRenderer delay={500}>
-                                <div className={styles['message-container']}>
-                                    <Image
-                                        className={styles['image']}
-                                        src={require('/images/empty.png')}
-                                        alt={' '}
-                                    />
-                                    <div className={styles['message-label']}>{model === 'library' ? 'Library' : 'Continue Watching'} not loaded!</div>
-                                </div>
-                            </DelayedRenderer>
-                            :
-                            library.catalog.length === 0 ?
-                                <div className={styles['message-container']}>
-                                    <Image
-                                        className={styles['image']}
-                                        src={require('/images/empty.png')}
-                                        alt={' '}
-                                    />
-                                    <div className={styles['message-label']}>Empty {model === 'library' ? 'Library' : 'Continue Watching'}</div>
-                                </div>
+                        {
+                            library.selected === null ?
+                                <DelayedRenderer delay={500}>
+                                    <div className={styles['message-container']}>
+                                        <Image
+                                            className={styles['image']}
+                                            src={require('/images/empty.png')}
+                                            alt={' '}
+                                        />
+                                        <div className={styles['message-label']}>{model === 'library' ? 'Library' : 'Continue Watching'} not loaded!</div>
+                                    </div>
+                                </DelayedRenderer>
                                 :
-                                <div ref={scrollContainerRef} className={classnames(styles['meta-items-container'], 'animation-fade-in')} onScroll={onScroll}>
-                                    {library.catalog.map((libItem, index) => (
-                                        <LibItem {...libItem} notifications={notifications} removable={model === 'library'} key={index} />
-                                    ))}
-                                </div>
-                }
-            </div>
+                                library.catalog.length === 0 ?
+                                    <div className={styles['message-container']}>
+                                        <Image
+                                            className={styles['image']}
+                                            src={require('/images/empty.png')}
+                                            alt={' '}
+                                        />
+                                        <div className={styles['message-label']}>Empty {model === 'library' ? 'Library' : 'Continue Watching'}</div>
+                                    </div>
+                                    :
+                                    <div ref={scrollContainerRef} className={classnames(styles['meta-items-container'], 'animation-fade-in')} onScroll={onScroll}>
+                                        {
+                                            library.catalog.map((libItem, index) => (
+                                                <LibItem {...libItem} notifications={notifications} removable={model === 'library'} key={index} />
+                                            ))
+                                        }
+                                    </div>
+                        }
+                    </div>
+                    :
+                    <Placeholder />
+            }
         </MainNavBars>
     );
 };

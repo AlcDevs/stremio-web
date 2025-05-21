@@ -235,6 +235,7 @@ module.exports = (env, argv) => ({
                 { from: 'favicons', to: 'favicons' },
                 { from: 'images', to: 'images' },
                 { from: 'screenshots/*.webp', to: './' },
+                { from: '.well-known', to: '.well-known' },
             ]
         }),
         new MiniCssExtractPlugin({

@@ -69,6 +69,7 @@ const OptionsMenu = ({ className, stream, playbackDevices }) => {
     const onMouseDown = React.useCallback((event) => {
         event.nativeEvent.optionsMenuClosePrevented = true;
     }, []);
+
     return (
         <div className={classnames(className, styles['options-menu-container'])} onMouseDown={onMouseDown}>
             {
@@ -112,7 +113,7 @@ const OptionsMenu = ({ className, stream, playbackDevices }) => {
 OptionsMenu.propTypes = {
     className: PropTypes.string,
     stream: PropTypes.object,
-    playbackDevices: PropTypes.array
+    playbackDevices: PropTypes.array,
 };
 
 module.exports = OptionsMenu;

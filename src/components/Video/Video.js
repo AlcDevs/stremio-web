@@ -8,11 +8,13 @@ const { useRouteFocused } = require('stremio-router');
 const { default: Icon } = require('@stremio/stremio-icons/react');
 const { Button, Image, Popup } = require('stremio/components');
 const useBinaryState = require('stremio/common/useBinaryState');
+const useProfile = require('stremio/common/useProfile');
 const VideoPlaceholder = require('./VideoPlaceholder');
 const styles = require('./styles');
 
-const Video = ({ className, id, title, thumbnail, altThumbnail, episode, released, upcoming, watched, progress, scheduled, deepLinks, onMarkVideoAsWatched, ...props }) => {
+const Video = ({ className, id, title, thumbnail, altThumbnail, season, episode, released, upcoming, watched, progress, scheduled, seasonWatched, deepLinks, onMarkVideoAsWatched, onMarkSeasonAsWatched, ...props }) => {
     const routeFocused = useRouteFocused();
+    const profile = useProfile();
     const [menuOpen, , closeMenu, toggleMenu] = useBinaryState(false);
     const popupLabelOnMouseUp = React.useCallback((event) => {
         if (!event.nativeEvent.togglePopupPrevented) {
@@ -50,6 +52,12 @@ const Video = ({ className, id, title, thumbnail, altThumbnail, episode, release
         closeMenu();
         onMarkVideoAsWatched({ id, released }, watched);
     }, [id, released, watched]);
+    const toggleWatchedSeasonOnClick = React.useCallback((event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        closeMenu();
+        onMarkSeasonAsWatched(season, seasonWatched);
+    }, [season, seasonWatched, onMarkSeasonAsWatched]);
     const videoButtonOnClick = React.useCallback(() => {
         if (deepLinks) {
             if (typeof deepLinks.player === 'string') {
@@ -60,13 +68,14 @@ const Video = ({ className, id, title, thumbnail, altThumbnail, episode, release
         }
     }, [deepLinks]);
     const renderLabel = React.useMemo(() => function renderLabel({ className, id, title, thumbnail, altThumbnail, episode, released, upcoming, watched, progress, scheduled, children, ...props }) {
+        const blurThumbnail = profile.settings.hideSpoilers && season && episode && !watched;
         return (
             <Button {...props} className={classnames(className, styles['video-container'])} title={title}>
                 {
                     typeof thumbnail === 'string' && thumbnail.length > 0 ?
                         <div className={styles['thumbnail-container']}>
                             <Image
-                                className={styles['thumbnail']}
+                                className={classnames(styles['thumbnail'], { [styles['blurred']]: blurThumbnail })}
                                 src={thumbnail}
                                 alt=" "
                                 renderFallback={() => {
@@ -148,9 +157,12 @@ const Video = ({ className, id, title, thumbnail, altThumbnail, episode, release
                 <Button className={styles['context-menu-option-container']} title={watched ? 'Mark as non-watched' : 'Mark as watched'} onClick={toggleWatchedOnClick}>
                     <div className={styles['context-menu-option-label']}>{watched ? t('CTX_MARK_NON_WATCHED') : t('CTX_MARK_WATCHED')}</div>
                 </Button>
+                <Button className={styles['context-menu-option-container']} title={seasonWatched ? t('CTX_UNMARK_REST') : t('CTX_MARK_REST')} onClick={toggleWatchedSeasonOnClick}>
+                    <div className={styles['context-menu-option-label']}>{seasonWatched ? t('CTX_UNMARK_REST') : t('CTX_MARK_REST')}</div>
+                </Button>
             </div>
         );
-    }, [watched, toggleWatchedOnClick]);
+    }, [watched, seasonWatched, toggleWatchedOnClick]);
     React.useEffect(() => {
         if (!routeFocused) {
             closeMenu();
@@ -189,6 +201,7 @@ Video.propTypes = {
     id: PropTypes.string,
     title: PropTypes.string,
     thumbnail: PropTypes.string,
+    season: PropTypes.number,
     episode: PropTypes.number,
     altThumbnail: PropTypes.string,
     released: PropTypes.instanceOf(Date),
@@ -196,11 +209,13 @@ Video.propTypes = {
     watched: PropTypes.bool,
     progress: PropTypes.number,
     scheduled: PropTypes.bool,
+    seasonWatched: PropTypes.bool,
     deepLinks: PropTypes.shape({
         metaDetailsStreams: PropTypes.string,
         player: PropTypes.string
     }),
     onMarkVideoAsWatched: PropTypes.func,
+    onMarkSeasonAsWatched: PropTypes.func,
 };
 
 module.exports = Video;

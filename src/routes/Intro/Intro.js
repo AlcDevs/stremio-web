@@ -12,6 +12,8 @@ const { Button, Image, Checkbox } = require('stremio/components');
 const CredentialsTextInput = require('./CredentialsTextInput');
 const PasswordResetModal = require('./PasswordResetModal');
 const useFacebookLogin = require('./useFacebookLogin');
+const { default: useAppleLogin } = require('./useAppleLogin');
+
 const styles = require('./styles');
 
 const SIGNUP_FORM = 'signup';
@@ -22,6 +24,7 @@ const Intro = ({ queryParams }) => {
     const { t } = useTranslation();
     const routeFocused = useRouteFocused();
     const [startFacebookLogin, stopFacebookLogin] = useFacebookLogin();
+    const [startAppleLogin, stopAppleLogin] = useAppleLogin();
     const emailRef = React.useRef(null);
     const passwordRef = React.useRef(null);
     const confirmPasswordRef = React.useRef(null);
@@ -104,6 +107,33 @@ const Intro = ({ queryParams }) => {
     }, []);
     const cancelLoginWithFacebook = React.useCallback(() => {
         stopFacebookLogin();
+        closeLoaderModal();
+    }, []);
+    const loginWithApple = React.useCallback(() => {
+        openLoaderModal();
+        startAppleLogin()
+            .then(({ token, sub, email, name }) => {
+                core.transport.dispatch({
+                    action: 'Ctx',
+                    args: {
+                        action: 'Authenticate',
+                        args: {
+                            type: 'Apple',
+                            token,
+                            sub,
+                            email,
+                            name
+                        }
+                    }
+                });
+            })
+            .catch((error) => {
+                closeLoaderModal();
+                dispatch({ type: 'error', error: error.message });
+            });
+    }, []);
+    const cancelLoginWithApple = React.useCallback(() => {
+        stopAppleLogin();
         closeLoaderModal();
     }, []);
     const loginWithEmail = React.useCallback(() => {
@@ -336,7 +366,7 @@ const Intro = ({ queryParams }) => {
                             </div>
                     }
                     {
-                        state.error.length > 0 ?
+                        state.error && state.error.length > 0 ?
                             <div ref={errorRef} className={styles['error-message']}>{state.error}</div>
                             :
                             null
@@ -349,6 +379,10 @@ const Intro = ({ queryParams }) => {
                     <Button className={classnames(styles['form-button'], styles['facebook-button'])} onClick={loginWithFacebook}>
                         <Icon className={styles['icon']} name={'facebook'} />
                         <div className={styles['label']}>Continue with Facebook</div>
+                    </Button>
+                    <Button className={classnames(styles['form-button'], styles['apple-button'])} onClick={loginWithApple}>
+                        <Icon className={styles['icon']} name={'macos'} />
+                        <div className={styles['label']}>Continue with Apple</div>
                     </Button>
                     {
                         state.form === SIGNUP_FORM ?
@@ -388,7 +422,7 @@ const Intro = ({ queryParams }) => {
                         <div className={styles['loader-container']}>
                             <Icon className={styles['icon']} name={'person'} />
                             <div className={styles['label']}>Authenticating...</div>
-                            <Button className={styles['button']} onClick={cancelLoginWithFacebook}>
+                            <Button className={styles['button']} onClick={cancelLoginWithFacebook && cancelLoginWithApple}>
                                 {t('BUTTON_CANCEL')}
                             </Button>
                         </div>

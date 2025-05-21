@@ -1,7 +1,7 @@
 // Copyright (C) 2017-2024 Smart code 203358507
 
 import React, { useMemo } from 'react';
-import Item from './Item';
+import { Item, ItemPlaceholder } from './Item';
 import styles from './List.less';
 
 type Props = {
@@ -20,16 +20,21 @@ const List = ({ items, selected, monthInfo, profile, onChange }: Props) => {
     return (
         <div className={styles['list']}>
             {
-                filteredItems.map((item) => (
-                    <Item
-                        key={item.date.day}
-                        {...item}
-                        selected={selected}
-                        monthInfo={monthInfo}
-                        profile={profile}
-                        onClick={onChange}
-                    />
-                ))
+                items.length === 0 ?
+                    [1, 2, 3].map((index) => (
+                        <ItemPlaceholder key={index} />
+                    ))
+                    :
+                    filteredItems.map((item) => (
+                        <Item
+                            key={item.date.day}
+                            {...item}
+                            selected={selected}
+                            monthInfo={monthInfo}
+                            profile={profile}
+                            onClick={onChange}
+                        />
+                    ))
             }
         </div>
     );

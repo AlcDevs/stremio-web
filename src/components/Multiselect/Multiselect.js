@@ -10,16 +10,16 @@ const ModalDialog = require('stremio/components/ModalDialog');
 const useBinaryState = require('stremio/common/useBinaryState');
 const styles = require('./styles');
 
-const Multiselect = ({ className, mode, direction, title, disabled, dataset, renderLabelContent, renderLabelText, onOpen, onClose, onSelect, multiSelect, showIndex, ...props }) => {
+const Multiselect = ({ className, mode, direction, title, disabled, dataset, options, renderLabelContent, renderLabelText, onOpen, onClose, onSelect, multiSelect, showIndex, ...props }) => {
     const [menuOpen, , closeMenu, toggleMenu] = useBinaryState(false);
-    const options = React.useMemo(() => {
-        return Array.isArray(props.options) ?
-            props.options.filter((option) => {
+    const filteredOptions = React.useMemo(() => {
+        return Array.isArray(options) ?
+            options.filter((option) => {
                 return option && (typeof option.value === 'string' || option.value === null);
             })
             :
             [];
-    }, [props.options]);
+    }, [options]);
     const selected = React.useMemo(() => {
         return Array.isArray(props.selected) ?
             props.selected.filter((value) => {
@@ -94,7 +94,7 @@ const Multiselect = ({ className, mode, direction, title, disabled, dataset, ren
                                     :
                                     selected.length > 0 ?
                                         selected.map((value) => {
-                                            const option = options.find((option) => option.value === value);
+                                            const option = filteredOptions.find((option) => option.value === value);
                                             return option && typeof option.label === 'string' ?
                                                 option.label
                                                 :
@@ -109,12 +109,12 @@ const Multiselect = ({ className, mode, direction, title, disabled, dataset, ren
             }
             {children}
         </Button>
-    ), [menuOpen, title, disabled, options, selected, labelOnClick, renderLabelContent, renderLabelText]);
+    ), [menuOpen, title, disabled, filteredOptions, selected, labelOnClick, renderLabelContent, renderLabelText]);
     const renderMenu = React.useCallback(() => (
         <div className={styles['menu-container']} onKeyDown={menuOnKeyDown} onClick={menuOnClick}>
             {
-                options.length > 0 ?
-                    options.map(({ label, title, value }) => (
+                filteredOptions.length > 0 ?
+                    filteredOptions.map(({ label, title, value }) => (
                         <Button key={value} className={classnames(styles['option-container'], { 'selected': selected.includes(value) })} title={typeof title === 'string' ? title : typeof label === 'string' ? label : value} data-value={value} onClick={optionOnClick}>
                             <div className={styles['label']}>{typeof label === 'string' ? label : value}</div>
                             {
@@ -135,7 +135,7 @@ const Multiselect = ({ className, mode, direction, title, disabled, dataset, ren
                     </div>
             }
         </div>
-    ), [options, selected, menuOnKeyDown, menuOnClick, optionOnClick]);
+    ), [filteredOptions, selected, menuOnKeyDown, menuOnClick, optionOnClick]);
     const renderPopupLabel = React.useMemo(() => (labelProps) => {
         return renderLabel({
             ...labelProps,

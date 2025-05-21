@@ -4,6 +4,8 @@ const React = require('react');
 const { useTranslate } = require('stremio/common');
 
 const mapSelectableInputs = (library, t) => {
+    const selectedType = library.selectable.types
+        .filter(({ selected }) => selected).map(({ deepLinks }) => deepLinks.library);
     const typeSelect = {
         title: t.string('SELECT_TYPE'),
         options: library.selectable.types
@@ -11,9 +13,9 @@ const mapSelectableInputs = (library, t) => {
                 value: deepLinks.library,
                 label: type === null ? t.string('TYPE_ALL') : t.stringWithPrefix(type, 'TYPE_')
             })),
-        selected: library.selectable.types
-            .filter(({ selected }) => selected)
-            .map(({ deepLinks }) => deepLinks.library),
+        selected: selectedType.length
+            ? selectedType
+            : [library.selectable.types[0]].map(({ deepLinks }) => deepLinks.library),
         onSelect: (event) => {
             window.location = event.value;
         }

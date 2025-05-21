@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom';
 import classNames from 'classnames';
 import useBinaryState from 'stremio/common/useBinaryState';
+import useOrientation from 'stremio/common/useOrientation';
 import styles from './BottomSheet.less';
 
 const CLOSE_THRESHOLD = 100;
@@ -17,6 +18,7 @@ type Props = {
 
 const BottomSheet = ({ children, title, show, onClose }: Props) => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const orientation = useOrientation();
     const [startOffset, setStartOffset] = useState(0);
     const [offset, setOffset] = useState(0);
 
@@ -57,6 +59,10 @@ const BottomSheet = ({ children, title, show, onClose }: Props) => {
     useEffect(() => {
         !opened && onClose();
     }, [opened]);
+
+    useEffect(() => {
+        opened && close();
+    }, [orientation]);
 
     return opened && createPortal((
         <div className={styles['bottom-sheet']}>

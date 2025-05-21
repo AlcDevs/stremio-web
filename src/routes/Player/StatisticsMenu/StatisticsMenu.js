@@ -33,7 +33,7 @@ const StatisticsMenu = ({ className, peers, speed, completed, infoHash }) => {
                         Completed
                     </div>
                     <div className={styles['value']}>
-                        { completed } %
+                        { Math.min(completed, 100) } %
                     </div>
                 </div>
             </div>

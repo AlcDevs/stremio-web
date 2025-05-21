@@ -11,7 +11,7 @@ const useDiscover = require('./useDiscover');
 const useSelectableInputs = require('./useSelectableInputs');
 const styles = require('./styles');
 
-const SCROLL_TO_BOTTOM_TRESHOLD = 400;
+const SCROLL_TO_BOTTOM_THRESHOLD = 400;
 
 const Discover = ({ urlParams, queryParams }) => {
     const { core } = useServices();
@@ -26,6 +26,15 @@ const Discover = ({ urlParams, queryParams }) => {
             metasContainerRef.current.scrollTop = 0;
         }
     }, [discover.catalog]);
+    React.useEffect(() => {
+        if (hasNextPage && metasContainerRef.current) {
+            const containerHeight = metasContainerRef.current.scrollHeight;
+            const viewportHeight = metasContainerRef.current.clientHeight;
+            if (containerHeight <= viewportHeight + SCROLL_TO_BOTTOM_THRESHOLD) {
+                loadNextPage();
+            }
+        }
+    }, [hasNextPage, loadNextPage]);
     const selectedMetaItem = React.useMemo(() => {
         return discover.catalog !== null &&
             discover.catalog.content.type === 'Ready' &&
@@ -76,7 +85,7 @@ const Discover = ({ urlParams, queryParams }) => {
             loadNextPage();
         }
     }, [hasNextPage, loadNextPage]);
-    const onScroll = useOnScrollToBottom(onScrollToBottom, SCROLL_TO_BOTTOM_TRESHOLD);
+    const onScroll = useOnScrollToBottom(onScrollToBottom, SCROLL_TO_BOTTOM_THRESHOLD);
     React.useEffect(() => {
         closeInputsModal();
         closeAddonModal();
@@ -98,9 +107,11 @@ const Discover = ({ urlParams, queryParams }) => {
                                 onSelect={onSelect}
                             />
                         ))}
-                        <Button className={styles['filter-container']} title={'All filters'} onClick={openInputsModal}>
-                            <Icon className={styles['filter-icon']} name={'filters'} />
-                        </Button>
+                        <div className={styles['filter-container']}>
+                            <Button className={styles['filter-button']} title={'All filters'} onClick={openInputsModal}>
+                                <Icon className={styles['filter-icon']} name={'filters'} />
+                            </Button>
+                        </div>
                     </div>
 
                     {

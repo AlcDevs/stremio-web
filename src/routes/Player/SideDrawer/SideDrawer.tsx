@@ -47,6 +47,10 @@ const SideDrawer = memo(forwardRef<HTMLDivElement, Props>(({ seriesInfo, classNa
         setSeason(parseInt(event.value));
     }, []);
 
+    const seasonWatched = React.useMemo(() => {
+        return videos.every((video) => video.watched);
+    }, [videos]);
+
     const onMarkVideoAsWatched = useCallback((video: Video, watched: boolean) => {
         core.transport.dispatch({
             action: 'Player',
@@ -75,6 +79,16 @@ const SideDrawer = memo(forwardRef<HTMLDivElement, Props>(({ seriesInfo, classNa
             }
         );
     }, [metaItem.videos]);
+
+    const onMarkSeasonAsWatched = (season: number, watched: boolean) => {
+        core.transport.dispatch({
+            action: 'Player',
+            args: {
+                action: 'MarkSeasonAsWatched',
+                args: [season, !watched]
+            }
+        });
+    };
 
     const onMouseDown = (event: React.MouseEvent) => {
         event.stopPropagation();
@@ -115,14 +129,17 @@ const SideDrawer = memo(forwardRef<HTMLDivElement, Props>(({ seriesInfo, classNa
                                     title={video.title}
                                     thumbnail={video.thumbnail}
                                     altThumbnail={getAltThumbnail(video, season)}
+                                    season={video.season}
                                     episode={video.episode}
                                     released={video.released}
                                     upcoming={video.upcoming}
                                     watched={video.watched}
+                                    seasonWatched={seasonWatched}
                                     progress={video.progress}
                                     deepLinks={video.deepLinks}
                                     scheduled={video.scheduled}
                                     onMarkVideoAsWatched={onMarkVideoAsWatched}
+                                    onMarkSeasonAsWatched={onMarkSeasonAsWatched}
                                 />
                             ))}
                         </div>

@@ -3,7 +3,7 @@
 const React = require('react');
 const classnames = require('classnames');
 const debounce = require('lodash.debounce');
-const { useTranslation } = require('react-i18next');
+const useTranslate = require('stremio/common/useTranslate');
 const { useStreamingServer, useNotifications, withCoreSuspender, getVisibleChildrenRange, useProfile } = require('stremio/common');
 const { ContinueWatchingItem, EventModal, MainNavBars, MetaItem, MetaRow } = require('stremio/components');
 const useBoard = require('./useBoard');
@@ -14,7 +14,7 @@ const { default: StreamingServerWarning } = require('./StreamingServerWarning');
 const THRESHOLD = 5;
 
 const Board = () => {
-    const { t } = useTranslation();
+    const t = useTranslate();
     const streamingServer = useStreamingServer();
     const continueWatchingPreview = useContinueWatchingPreview();
     const [board, loadBoardRows] = useBoard();
@@ -55,7 +55,7 @@ const Board = () => {
                         continueWatchingPreview.items.length > 0 ?
                             <MetaRow
                                 className={classnames(styles['board-row'], styles['continue-watching-row'], 'animation-fade-in')}
-                                title={t('BOARD_CONTINUE_WATCHING')}
+                                title={t.string('BOARD_CONTINUE_WATCHING')}
                                 catalog={continueWatchingPreview}
                                 itemComponent={ContinueWatchingItem}
                                 notifications={notifications}
@@ -94,6 +94,7 @@ const Board = () => {
                                         key={index}
                                         className={classnames(styles['board-row'], styles['board-row-poster'], 'animation-fade-in')}
                                         catalog={catalog}
+                                        title={t.catalogTitle(catalog)}
                                     />
                                 );
                             }

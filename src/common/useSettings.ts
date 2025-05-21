@@ -1,13 +1,14 @@
-// Copyright (C) 2017-2023 Smart code 203358507
+// Copyright (C) 2017-2025 Smart code 203358507
 
-const React = require('react');
-const { useServices } = require('stremio/services');
-const { useProfile } = require('stremio/common');
+import { useCallback } from 'react';
+import { useServices } from 'stremio/services';
+import useProfile from './useProfile';
 
-const useSettings = () => {
+const useSettings = (): [Settings, (settings: Settings) => void] => {
     const { core } = useServices();
     const profile = useProfile();
-    const updateSettings = React.useCallback((settings) => {
+
+    const updateSettings = useCallback((settings: Settings) => {
         core.transport.dispatch({
             action: 'Ctx',
             args: {
@@ -19,7 +20,8 @@ const useSettings = () => {
             }
         });
     }, [profile]);
+
     return [profile.settings, updateSettings];
 };
 
-module.exports = useSettings;
+export default useSettings;
