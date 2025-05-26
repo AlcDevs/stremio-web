@@ -75,6 +75,11 @@ function Shell({ core }) {
                 break;
             }
             case 'AddonInstall': {
+                if (nativeMsg.path.startsWith('stremio:///detail/')) {
+                    const detailsPath = nativeMsg.path.replace('stremio://', '');
+                    window.location.assign('#' + detailsPath);
+                    break;
+                }
                 const addonPath = nativeMsg.path.replace('stremio://', 'https://');
                 window.location.assign('#/addons?addon=' + addonPath);
                 break;

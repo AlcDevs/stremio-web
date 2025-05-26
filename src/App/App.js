@@ -6,11 +6,12 @@ const { useTranslation } = require('react-i18next');
 const { Router } = require('stremio-router');
 const { Core, Shell, Chromecast, DragAndDrop, KeyboardShortcuts, ServicesProvider } = require('stremio/services');
 const { NotFound } = require('stremio/routes');
-const { FileDropProvider, PlatformProvider, StorageProvider, ToastProvider, TooltipProvider, CONSTANTS, withCoreSuspender, useShell } = require('stremio/common');
+const { PlatformProvider, StorageProvider, ToastProvider, TooltipProvider, CONSTANTS, withCoreSuspender, useShell } = require('stremio/common');
 const ServicesToaster = require('./ServicesToaster');
 const DeepLinkHandler = require('./DeepLinkHandler');
 const SearchParamsHandler = require('./SearchParamsHandler');
 const PipHandler = require('./PipHandler');
+const ActivityTracker = require('./ActivityTracker');
 const ErrorDialog = require('./ErrorDialog');
 const UpdateDialogHandler = require('./UpdateDialogHandler');
 const withProtectedRoutes = require('./withProtectedRoutes');
@@ -183,6 +184,7 @@ const App = () => {
                                                 <>
                                                     <UpdateDialogHandler className={styles['update-container']} />
                                                     <PipHandler />
+                                                    <ActivityTracker />
                                                 </>
                                             )}
                                             <ServicesToaster />

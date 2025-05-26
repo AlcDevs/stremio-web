@@ -8,7 +8,7 @@ const langs = require('langs');
 const { useTranslation } = require('react-i18next');
 const { useRouteFocused } = require('stremio-router');
 const { useServices } = require('stremio/services');
-const { onFileDrop, useSettings, useFullscreen, useBinaryState, useToast, useStreamingServer, withCoreSuspender, useProfile, useStorage, CONSTANTS, useShell} = require('stremio/common');
+const { useSettings, useFullscreen, useBinaryState, useToast, useStreamingServer, withCoreSuspender, useProfile, useStorage, CONSTANTS, useShell} = require('stremio/common');
 const { HorizontalNavBar, Transition, ContextMenu } = require('stremio/components');
 const BufferingLoader = require('./BufferingLoader');
 const VolumeChangeIndicator = require('./VolumeChangeIndicator');
@@ -105,6 +105,62 @@ const Player = ({ urlParams, queryParams }) => {
         const isEmbedded = selectedTrack.origin === 'EMBEDDED';
         setExternalEmbedded(!isEmbedded);
     }, [video.state.selectedSubtitlesTrackId]);
+
+    React.useEffect(() => {
+        if (!player.selected || !player.metaItem || player.metaItem.type !== 'Ready' || !video.state.duration || !storage.isDiscordRpcOn) {
+            return;
+        }
+
+        const videoType = player.metaItem.content.type === 'movie' ? 'movie' : 'series';
+        const title = player.metaItem.content.name || '';
+        const season = player.seriesInfo?.season;
+        const episode = player.seriesInfo?.episode;
+
+        let episodeName = '';
+        let episodeThumbnail = '';
+
+        if (videoType === 'series' && Array.isArray(player.metaItem.content.videos)) {
+            const currentEpisode = player.metaItem.content.videos.find(v => v.season === season && v.episode === episode);
+            if (currentEpisode) {
+                episodeName = currentEpisode.title;
+                episodeThumbnail = currentEpisode.thumbnail;
+            }
+        }
+
+        const mainThumbnail = player.metaItem.content.poster || player.metaItem.content.background || '';
+        const elapsedSeconds = Math.floor((video.state.time / 1000) || 0);
+        const durationSeconds = Math.floor((video.state.duration / 1000) || 0);
+        const isPaused = video.state.paused ? 'yes' : 'no';
+
+        const imdbLink = player.metaItem.content.links?.find(link => link.category === 'imdb')?.url || '';
+        const stremioLink = player.metaItem.content.links?.find(link => link.category === 'share')?.url || '';
+
+        shell.send('activity', [
+            'watching',
+            videoType,
+            title,
+            season ? season.toString() : '',
+            episode ? episode.toString() : '',
+            episodeName,
+            episodeThumbnail,
+            mainThumbnail,
+            elapsedSeconds.toString(),
+            durationSeconds.toString(),
+            isPaused,
+            imdbLink,
+            stremioLink,
+        ]);
+
+    }, [
+        player.selected,
+        player.metaItem,
+        player.seriesInfo,
+        video.state.time,
+        video.state.duration,
+        video.state.paused,
+        shell,
+        storage
+    ]);
 
     const onImplementationChanged = React.useCallback(() => {
         video.setProp('subtitlesSize', settings.subtitlesSize);

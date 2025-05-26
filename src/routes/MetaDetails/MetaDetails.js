@@ -4,7 +4,7 @@ const React = require('react');
 const PropTypes = require('prop-types');
 const classnames = require('classnames');
 const { useServices } = require('stremio/services');
-const { withCoreSuspender } = require('stremio/common');
+const { withCoreSuspender, useStorage} = require('stremio/common');
 const { VerticalNavBar, HorizontalNavBar, DelayedRenderer, Image, MetaPreview, ModalDialog } = require('stremio/components');
 const StreamsList = require('./StreamsList');
 const VideosList = require('./VideosList');
@@ -14,7 +14,8 @@ const useMetaExtensionTabs = require('./useMetaExtensionTabs');
 const styles = require('./styles');
 
 const MetaDetails = ({ urlParams, queryParams }) => {
-    const { core } = useServices();
+    const { core, shell } = useServices();
+    const [storage,] = useStorage();
     const metaDetails = useMetaDetails(urlParams);
     const [season, setSeason] = useSeason(urlParams, queryParams);
     const [tabs, metaExtension, clearMetaExtension] = useMetaExtensionTabs(metaDetails.metaExtensions);
@@ -91,6 +92,22 @@ const MetaDetails = ({ urlParams, queryParams }) => {
         typeof metaDetails.metaItem.content.content?.background === 'string' &&
         metaDetails.metaItem.content.content.background.length > 0
     ), [metaPath, metaDetails]);
+
+    React.useEffect(() => {
+        if (
+            metaDetails.metaItem &&
+            metaDetails.metaItem.content.type === 'Ready' &&
+            storage.isDiscordRpcOn
+        ) {
+            const item = metaDetails.metaItem.content.content;
+            shell.transport.send('activity', [
+                'meta-detail',
+                item.type,
+                item.name,
+                item.poster || item.background
+            ]);
+        }
+    }, [metaDetails.metaItem, shell, storage]);
 
     return (
         <div className={styles['metadetails-container']}>
