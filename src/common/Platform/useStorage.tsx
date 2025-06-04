@@ -13,6 +13,7 @@ interface StorageData {
     rememberTrackSelection: boolean;
     showSubTrackLoadedToast: boolean;
     useMpvForExternalSubtitles: boolean;
+    embeddedSubDelay: boolean;
     isDiscordRpcOn: boolean;
     maxVolume: string;
 }
@@ -31,6 +32,7 @@ const localProfile: StorageData = {
     rememberTrackSelection: true,
     showSubTrackLoadedToast: true,
     useMpvForExternalSubtitles: true,
+    embeddedSubDelay: true,
     isDiscordRpcOn: true,
     maxVolume: '130',
 };

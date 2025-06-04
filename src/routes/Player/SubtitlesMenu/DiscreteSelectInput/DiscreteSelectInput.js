@@ -19,8 +19,19 @@ const DiscreteSelectInput = ({ className, value, label, disabled, dataset, onCha
             });
         }
     }, [dataset, onChange]);
+    const onWheel = React.useCallback((event) => {
+        if (disabled || typeof onChange !== 'function') return;
+        const direction = event.deltaY < 0 ? 'increment' : 'decrement';
+        onChange({
+            type: 'change',
+            value: direction,
+            dataset: dataset,
+            reactEvent: event,
+            nativeEvent: event.nativeEvent
+        });
+    }, [dataset, disabled, onChange]);
     return (
-        <div className={classnames(className, styles['discrete-input-container'], { 'disabled': disabled })}>
+        <div className={classnames(className, styles['discrete-input-container'], { 'disabled': disabled })} onWheel={onWheel}>
             <div className={styles['header']}>{label}</div>
             <div className={styles['input-container']} title={disabled ? `${label} is not configurable` : null}>
                 <Button className={classnames(styles['button-container'], { 'disabled': disabled })} data-type={'decrement'} onClick={buttonOnClick}>

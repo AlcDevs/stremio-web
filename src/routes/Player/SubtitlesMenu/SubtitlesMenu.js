@@ -20,10 +20,10 @@ const LANGUAGE_PRIORITIES = {
 };
 
 const SubtitlesMenu = React.memo((props) => {
-    const [, updateStorage] = useStorage();
+    const [storage, updateStorage] = useStorage();
     const subtitlesDelay = React.useMemo(() => {
-        return props.externalEmbedded ? props.subtitlesDelay : props.extraSubtitlesDelay;
-    }, [props.externalEmbedded, props.subtitlesDelay, props.extraSubtitlesDelay]);
+        return (props.externalEmbedded || storage.embeddedSubDelay) ? props.subtitlesDelay : props.extraSubtitlesDelay;
+    }, [props.externalEmbedded, props.subtitlesDelay, props.extraSubtitlesDelay, storage.embeddedSubDelay]);
     const subtitlesLanguages = React.useMemo(() => {
         return (Array.isArray(props.subtitlesTracks) ? props.subtitlesTracks : [])
             .concat(Array.isArray(props.extraSubtitlesTracks) ? props.extraSubtitlesTracks : [])
@@ -115,15 +115,32 @@ const SubtitlesMenu = React.memo((props) => {
     }, [props.onSubtitlesTrackSelected, props.onExtraSubtitlesTrackSelected]);
     const onSubtitlesDelayChanged = React.useCallback((event) => {
         const delta = event.value === 'increment' ? 250 : -250;
-        if (typeof props.selectedExtraSubtitlesTrackId === 'string' || props.externalEmbedded) {
-            if (subtitlesDelay !== null && !isNaN(subtitlesDelay)) {
-                const extraDelay = subtitlesDelay + delta;
-                if (typeof props.onExtraSubtitlesDelayChanged === 'function' || typeof props.onSubtitlesDelayChanged === 'function') {
-                    props.externalEmbedded ? props.onSubtitlesDelayChanged(extraDelay) : props.onExtraSubtitlesDelayChanged(extraDelay);
-                }
+        let currentDelay = subtitlesDelay;
+        if (currentDelay === null || isNaN(currentDelay)) {
+            currentDelay = 0;
+        }
+        const newDelay = currentDelay + delta;
+        if (typeof props.selectedSubtitlesTrackId === 'string' && !props.externalEmbedded) {
+            if (storage.embeddedSubDelay && typeof props.onSubtitlesDelayChanged === 'function') {
+                props.onSubtitlesDelayChanged(newDelay);
             }
         }
-    }, [props.externalEmbedded, subtitlesDelay, props.onSubtitlesDelayChanged, props.selectedExtraSubtitlesTrackId, props.onExtraSubtitlesDelayChanged]);
+        else if (props.externalEmbedded || typeof props.selectedExtraSubtitlesTrackId === 'string') {
+            if (props.externalEmbedded && typeof props.onSubtitlesDelayChanged === 'function') {
+                props.onSubtitlesDelayChanged(newDelay);
+            } else if (!props.externalEmbedded && typeof props.onExtraSubtitlesDelayChanged === 'function') {
+                props.onExtraSubtitlesDelayChanged(newDelay);
+            }
+        }
+    }, [
+        subtitlesDelay,
+        props.externalEmbedded,
+        props.selectedSubtitlesTrackId,
+        props.selectedExtraSubtitlesTrackId,
+        storage.embeddedSubDelay,
+        props.onSubtitlesDelayChanged,
+        props.onExtraSubtitlesDelayChanged
+    ]);
     const onSubtitlesSizeChanged = React.useCallback((event) => {
         const delta = event.value === 'increment' ? 1 : -1;
         if (typeof props.selectedSubtitlesTrackId === 'string') {
@@ -232,8 +249,14 @@ const SubtitlesMenu = React.memo((props) => {
                 <DiscreteSelectInput
                     className={styles['discrete-input']}
                     label={t('DELAY')}
-                    value={(typeof props.selectedExtraSubtitlesTrackId === 'string' || props.externalEmbedded) && subtitlesDelay !== null && !isNaN(subtitlesDelay) ? `${(subtitlesDelay / 1000).toFixed(2)}s` : '--'}
-                    disabled={props.externalEmbedded ? false : (typeof props.selectedExtraSubtitlesTrackId !== 'string' || subtitlesDelay === null || isNaN(subtitlesDelay))}
+                    value={subtitlesDelay !== null && !isNaN(subtitlesDelay) ? `${(subtitlesDelay / 1000).toFixed(2)}s` : '--'}
+                    disabled={
+                        (!storage.embeddedSubDelay && typeof props.selectedSubtitlesTrackId === 'string' && !props.externalEmbedded)
+                        || (
+                            typeof props.selectedSubtitlesTrackId !== 'string' &&
+                            typeof props.selectedExtraSubtitlesTrackId !== 'string'
+                        )
+                    }
                     onChange={onSubtitlesDelayChanged}
                 />
                 <DiscreteSelectInput

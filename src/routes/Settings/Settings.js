@@ -322,8 +322,8 @@ const Settings = () => {
                             <Button
                                 className={classnames(styles['option-input-container'], styles['link-input-container'])}
                                 title={'Stremio Community V5 Github'} target={'_blank'}
-                                href={'https://github.com/Zaarrg/stremio-desktop-v5'}>
-                                <div className={styles['label']}>Stremio Desktop V5 Github</div>
+                                href={'https://github.com/Zaarrg/stremio-community-v5'}>
+                                <div className={styles['label']}>Stremio Community V5 Github</div>
                             </Button>
                         </div>
                         <div className={classnames(styles['option-container'], styles['link-container'])}>
@@ -738,6 +738,17 @@ const Settings = () => {
                                 tabIndex={-1}
                                 checked={storage.showSubTrackLoadedToast}
                                 onClick={() => updateStorage({showSubTrackLoadedToast: !storage.showSubTrackLoadedToast})}
+                            />
+                        </div>
+                        <div className={styles['option-container']}>
+                            <div className={styles['option-name-container']}>
+                                <div className={styles['label']}>{'Allow Embedded Subtitle Delay'}</div>
+                            </div>
+                            <Toggle
+                                className={classnames(styles['option-input-container'], styles['toggle-container'])}
+                                tabIndex={-1}
+                                checked={storage.embeddedSubDelay}
+                                onClick={() => updateStorage({embeddedSubDelay: !storage.embeddedSubDelay})}
                             />
                         </div>
                         <div className={styles['option-container']}>

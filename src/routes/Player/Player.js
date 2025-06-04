@@ -407,6 +407,17 @@ const Player = ({ urlParams, queryParams }) => {
     }, []);
 
     React.useEffect(() => {
+        if (!storage.embeddedSubDelay && video.state.selectedSubtitlesTrackId && video.state.subtitlesDelay !== 0 && !externalEmbedded) {
+            shell.send('mpv-set-prop', ['sub-delay', '0']);
+        }
+    }, [
+        externalEmbedded,
+        storage.embeddedSubDelay,
+        video.state.selectedSubtitlesTrackId,
+        video.state.subtitlesDelay
+    ]);
+
+    React.useEffect(() => {
         setError(null);
         video.unload();
 
