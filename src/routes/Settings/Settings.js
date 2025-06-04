@@ -321,7 +321,7 @@ const Settings = () => {
                         <div className={classnames(styles['option-container'], styles['link-container'])}>
                             <Button
                                 className={classnames(styles['option-input-container'], styles['link-input-container'])}
-                                title={'Stremio Desktop V5 Github'} target={'_blank'}
+                                title={'Stremio Community V5 Github'} target={'_blank'}
                                 href={'https://github.com/Zaarrg/stremio-desktop-v5'}>
                                 <div className={styles['label']}>Stremio Desktop V5 Github</div>
                             </Button>
@@ -968,8 +968,8 @@ const Settings = () => {
                                     {'Some features requires latest portable config. '}
                                     <Button
                                         className={classnames(styles['option-input-container'], styles['link-input-container'])}
-                                        title={'Portable Config Stremio Desktop V5'} target={'_blank'}
-                                        href={'https://github.com/Zaarrg/stremio-desktop-v5#%EF%B8%8F-mpv-configuration'}>
+                                        title={'Portable Config Stremio Community V5'} target={'_blank'}
+                                        href={'https://github.com/Zaarrg/stremio-community-v5#%EF%B8%8F-mpv-configuration'}>
                                         <div className={styles['label']}>{'More details here.'}</div>
                                     </Button>
                                 </div>
