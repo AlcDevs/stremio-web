@@ -81,7 +81,7 @@ function Shell({ core }) {
                     break;
                 }
                 const addonPath = nativeMsg.path.replace('stremio://', 'https://');
-                window.location.assign('#/addons?addon=' + addonPath);
+                window.location.assign('#/addons?addon_url=' + addonPath);
                 break;
             }
             case 'OpenFile': {

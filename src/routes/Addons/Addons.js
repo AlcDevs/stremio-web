@@ -28,6 +28,33 @@ const Addons = ({ urlParams, queryParams }) => {
     const [addAddonModalOpen, openAddAddonModal, closeAddAddonModal] = useBinaryState(false);
     const addAddonUrlInputRef = React.useRef(null);
     const [extensionMappings, setExtensionMappings] = React.useState([]);
+
+    function getRawQueryParam(paramName) {
+        const search = window.location.hash.split('?')[1] || '';
+        const pairs = search.split('&');
+        for (const pair of pairs) {
+            if (!pair) continue;
+            const [key, value = ''] = pair.split('=');
+            if (key === paramName) return value;
+        }
+        return undefined;
+    }
+
+    React.useEffect(() => {
+        const rawAddonUrl = getRawQueryParam('addon_url');
+        if (rawAddonUrl) {
+            setAddonDetailsTransportUrl(rawAddonUrl);
+            // Remove the addon_url param from the hash URL
+            const hashParts = window.location.hash.split('?');
+            if (hashParts.length > 1) {
+                const params = new URLSearchParams(hashParts[1]);
+                params.delete('addon_url');
+                const newHash = hashParts[0] + (params.toString() ? '?' + params.toString() : '');
+                window.location.replace(newHash);
+            }
+        }
+    }, [queryParams]);
+
     const addAddonOnSubmit = React.useCallback(() => {
         if (addAddonUrlInputRef.current !== null) {
             setAddonDetailsTransportUrl(addAddonUrlInputRef.current.value);
