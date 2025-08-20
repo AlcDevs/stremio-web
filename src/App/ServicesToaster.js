@@ -5,7 +5,7 @@ const { useServices } = require('stremio/services');
 const { useToast } = require('stremio/common');
 
 const ServicesToaster = () => {
-    const { core, dragAndDrop } = useServices();
+    const { core, dragAndDrop, shell } = useServices();
     const toast = useToast();
     React.useEffect(() => {
         const onCoreEvent = ({ event, args }) => {
@@ -76,13 +76,23 @@ const ServicesToaster = () => {
                 timeout: 4000
             });
         };
+        const onShellToast = (type, title, message, timeout) => {
+            toast.show({
+                type: type,
+                title: title,
+                message: message,
+                timeout: timeout,
+            });
+        };
         core.transport.on('CoreEvent', onCoreEvent);
         dragAndDrop.on('error', onDragAndDropError);
         dragAndDrop.on('success', onDragAndDropSuccess);
+        shell.on('ShowToast', onShellToast);
         return () => {
             core.transport.off('CoreEvent', onCoreEvent);
             dragAndDrop.off('error', onDragAndDropError);
             dragAndDrop.off('success', onDragAndDropSuccess);
+            shell.off('ShowToast', onShellToast);
         };
     }, []);
     return null;

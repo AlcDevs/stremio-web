@@ -70,6 +70,11 @@ function Shell({ core }) {
                 if (pipOverlay) pipOverlay.style.display = 'none';
                 break;
             }
+            case 'SubtitleDropped': {
+                const file_name = decodeURIComponent(nativeMsg.path.split(/[\\/]/).pop() || 'subtitle');
+                events.emit('ShowToast', 'success', 'Added subtitle file', file_name, 4000);
+                break;
+            }
             case 'FileDropped': {
                 playLocalFile(nativeMsg.path);
                 break;
@@ -189,6 +194,7 @@ function Shell({ core }) {
         transport.on('showPictureInPicture', (data) => onAppEvent('showPictureInPicture', data));
         transport.on('hidePictureInPicture', (data) => onAppEvent('hidePictureInPicture', data));
         transport.on('FileDropped', (data) => onAppEvent('FileDropped', data));
+        transport.on('SubtitleDropped', (data) => onAppEvent('SubtitleDropped', data));
         transport.on('AddonInstall', (data) => onAppEvent('AddonInstall', data));
         transport.on('OpenFile', (data) => onAppEvent('OpenFile', data));
         transport.on('OpenTorrent', (data) => onAppEvent('OpenTorrent', data));
