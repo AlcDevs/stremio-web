@@ -6,7 +6,7 @@ const classnames = require('classnames');
 const { useTranslation } = require('react-i18next');
 const { default: Icon } = require('@stremio/stremio-icons/react');
 const { usePlatform, useBinaryState, withCoreSuspender } = require('stremio/common');
-const { AddonDetailsModal, Button, Image, MainNavBars, Multiselect, ModalDialog, SearchBar, SharePrompt, TextInput } = require('stremio/components');
+const { AddonDetailsModal, Button, Image, MainNavBars, ModalDialog, SearchBar, SharePrompt, TextInput, MultiselectMenu } = require('stremio/components');
 const { useServices } = require('stremio/services');
 const Addon = require('./Addon');
 const useInstalledAddons = require('./useInstalledAddons');
@@ -162,7 +162,7 @@ const Addons = ({ urlParams, queryParams }) => {
             <div className={styles['addons-content']}>
                 <div className={styles['selectable-inputs-container']}>
                     {selectInputs.map((selectInput, index) => (
-                        <Multiselect
+                        <MultiselectMenu
                             {...selectInput}
                             key={index}
                             className={styles['select-input-container']}
@@ -179,7 +179,7 @@ const Addons = ({ urlParams, queryParams }) => {
                         value={search}
                         onChange={searchInputOnChange}
                     />
-                    <Button className={styles['filter-button']} title={'All filters'} onClick={openFiltersModal}>
+                    <Button className={styles['filter-button']} title={t('ALL_FILTERS')} onClick={openFiltersModal}>
                         <Icon className={styles['filter-icon']} name={'filters'} />
                     </Button>
                 </div>
@@ -187,12 +187,12 @@ const Addons = ({ urlParams, queryParams }) => {
                     installedAddons.selected !== null ?
                         installedAddons.selectable.types.length === 0 ?
                             <div className={styles['message-container']}>
-                                No addons ware installed!
+                                {t('NO_ADDONS')}
                             </div>
                             :
                             installedAddons.catalog.length === 0 ?
                                 <div className={styles['message-container']}>
-                                    No addons ware installed for that type!
+                                    {t('NO_ADDONS_FOR_TYPE')}
                                 </div>
                                 :
                                 <div className={styles['addons-list-container']}>
@@ -303,9 +303,9 @@ const Addons = ({ urlParams, queryParams }) => {
             </div>
             {
                 filtersModalOpen ?
-                    <ModalDialog title={'Addons filters'} className={styles['filters-modal']} onCloseRequest={closeFiltersModal}>
+                    <ModalDialog title={t('ADDONS_FILTERS')} className={styles['filters-modal']} onCloseRequest={closeFiltersModal}>
                         {selectInputs.map((selectInput, index) => (
-                            <Multiselect
+                            <MultiselectMenu
                                 {...selectInput}
                                 key={index}
                                 className={styles['select-input-container']}
@@ -352,7 +352,7 @@ const Addons = ({ urlParams, queryParams }) => {
                                 <span className={styles['name']}>{typeof sharedAddon.manifest.name === 'string' && sharedAddon.manifest.name.length > 0 ? sharedAddon.manifest.name : sharedAddon.manifest.id}</span>
                                 {
                                     typeof sharedAddon.manifest.version === 'string' && sharedAddon.manifest.version.length > 0 ?
-                                        <span className={styles['version']}>v. {sharedAddon.manifest.version}</span>
+                                        <span className={styles['version']}>{t('ADDON_VERSION_SHORT', { version: sharedAddon.manifest.version })}</span>
                                         :
                                         null
                                 }

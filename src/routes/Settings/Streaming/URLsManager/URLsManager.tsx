@@ -30,7 +30,7 @@ const URLsManager = () => {
     return (
         <div className={styles['wrapper']}>
             <div className={styles['header']}>
-                <div className={styles['label']}>URL</div>
+                <div className={styles['label']}>{t('URL')}</div>
                 <div className={styles['label']}>{t('STATUS')}</div>
             </div>
             <div className={styles['content']}>
@@ -46,11 +46,11 @@ const URLsManager = () => {
                 }
             </div>
             <div className={styles['footer']}>
-                <Button title={'Add URL'} className={styles['add-url']} onClick={onAdd}>
+                <Button title={t('SETTINGS_SERVER_ADD_URL')} className={styles['add-url']} onClick={onAdd}>
                     <Icon name={'add'} className={styles['icon']} />
                     {t('SETTINGS_SERVER_ADD_URL')}
                 </Button>
-                <Button className={styles['reload']} title={'Reload'} onClick={reloadServer}>
+                <Button className={styles['reload']} title={t('RELOAD')} onClick={reloadServer}>
                     <Icon name={'reset'} className={styles['icon']} />
                     <div className={styles['label']}>{t('RELOAD')}</div>
                 </Button>

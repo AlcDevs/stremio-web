@@ -7,8 +7,10 @@ const { default: Icon } = require('@stremio/stremio-icons/react');
 const { CONSTANTS, useProfile } = require('stremio/common');
 const { Button, Image } = require('stremio/components');
 const styles = require('./styles');
+const { useTranslation } = require('react-i18next');
 
 const NextVideoPopup = ({ className, metaItem, nextVideo, altThumbnail, onDismiss, onNextVideoRequested }) => {
+    const { t } = useTranslation();
     const profile = useProfile();
     const blurPosterImage = profile.settings.hideSpoilers && metaItem.type === 'series';
     const watchNowButtonRef = React.useRef(null);
@@ -74,7 +76,7 @@ const NextVideoPopup = ({ className, metaItem, nextVideo, altThumbnail, onDismis
                     {
                         typeof metaItem?.name === 'string' ?
                             <div className={styles['name']}>
-                                <span className={styles['label']}>Next on</span> { metaItem.name }
+                                <span className={styles['label']}>{t('PLAYER_NEXT_VIDEO_TITLE_SHORT')}</span> { metaItem.name }
                             </div>
                             :
                             null
@@ -91,11 +93,11 @@ const NextVideoPopup = ({ className, metaItem, nextVideo, altThumbnail, onDismis
                 <div className={styles['buttons-container']}>
                     <Button className={classnames(styles['button-container'], styles['dismiss'])} onClick={onDismissButtonClick}>
                         <Icon className={styles['icon']} name={'close'} />
-                        <div className={styles['label']}>Dismiss</div>
+                        <div className={styles['label']}>{t('PLAYER_NEXT_VIDEO_BUTTON_DISMISS')}</div>
                     </Button>
                     <Button ref={watchNowButtonRef} className={classnames(styles['button-container'], styles['play-button'])} onClick={onWatchNowButtonClick}>
                         <Icon className={styles['icon']} name={'play'} />
-                        <div className={styles['label']}>Watch Now</div>
+                        <div className={styles['label']}>{t('PLAYER_NEXT_VIDEO_BUTTON_WATCH')}</div>
                     </Button>
                 </div>
             </div>

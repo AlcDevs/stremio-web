@@ -17,6 +17,7 @@ const ActionButton = require('./ActionButton');
 const MetaLinks = require('./MetaLinks');
 const MetaPreviewPlaceholder = require('./MetaPreviewPlaceholder');
 const styles = require('./styles');
+const { Ratings } = require('./Ratings');
 
 const ALLOWED_LINK_REDIRECTS = [
     routesRegexp.search.regexp,
@@ -24,7 +25,7 @@ const ALLOWED_LINK_REDIRECTS = [
     routesRegexp.metadetails.regexp
 ];
 
-const MetaPreview = ({ className, compact, name, logo, background, runtime, releaseInfo, released, description, deepLinks, links, trailerStreams, inLibrary, toggleInLibrary }) => {
+const MetaPreview = React.forwardRef(({ className, compact, name, logo, background, runtime, releaseInfo, released, description, deepLinks, links, trailerStreams, inLibrary, toggleInLibrary, ratingInfo }, ref) => {
     const { t } = useTranslation();
     const [shareModalOpen, openShareModal, closeShareModal] = useBinaryState(false);
     const linksGroups = React.useMemo(() => {
@@ -98,7 +99,7 @@ const MetaPreview = ({ className, compact, name, logo, background, runtime, rele
         <div className={styles['logo-placeholder']}>{name}</div>
     ), [name]);
     return (
-        <div className={classnames(className, styles['meta-preview-container'], { [styles['compact']]: compact })}>
+        <div className={classnames(className, styles['meta-preview-container'], { [styles['compact']]: compact })} ref={ref}>
             {
                 typeof background === 'string' && background.length > 0 ?
                     <div className={styles['background-image-layer']}>
@@ -221,6 +222,27 @@ const MetaPreview = ({ className, compact, name, logo, background, runtime, rele
                         null
                 }
                 {
+                    typeof showHref === 'string' && compact ?
+                        <ActionButton
+                            className={classnames(styles['action-button'], styles['show-button'])}
+                            icon={'play'}
+                            label={t('SHOW')}
+                            tabIndex={compact ? -1 : 0}
+                            href={showHref}
+                        />
+                        :
+                        null
+                }
+                {
+                    !compact && ratingInfo !== null ?
+                        <Ratings
+                            ratingInfo={ratingInfo}
+                            className={styles['ratings']}
+                        />
+                        :
+                        null
+                }
+                {
                     typeof name === 'string' ?
                         <ActionButton
                             className={styles['action-button']}
@@ -229,18 +251,6 @@ const MetaPreview = ({ className, compact, name, logo, background, runtime, rele
                             tooltip={true}
                             tabIndex={compact ? -1 : 0}
                             href={'#/search?query=' + name}
-                        />
-                        :
-                        null
-                }
-                {
-                    typeof showHref === 'string' && compact ?
-                        <ActionButton
-                            className={classnames(styles['action-button'], styles['show-button'])}
-                            icon={'play'}
-                            label={t('SHOW')}
-                            tabIndex={compact ? -1 : 0}
-                            href={showHref}
                         />
                         :
                         null
@@ -274,7 +284,7 @@ const MetaPreview = ({ className, compact, name, logo, background, runtime, rele
             </div>
         </div>
     );
-};
+});
 
 MetaPreview.Placeholder = MetaPreviewPlaceholder;
 
@@ -300,7 +310,8 @@ MetaPreview.propTypes = {
     })),
     trailerStreams: PropTypes.array,
     inLibrary: PropTypes.bool,
-    toggleInLibrary: PropTypes.func
+    toggleInLibrary: PropTypes.func,
+    ratingInfo: PropTypes.object,
 };
 
 module.exports = MetaPreview;

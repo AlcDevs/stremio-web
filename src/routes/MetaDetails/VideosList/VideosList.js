@@ -5,6 +5,7 @@ const PropTypes = require('prop-types');
 const classnames = require('classnames');
 const { t } = require('i18next');
 const { useServices } = require('stremio/services');
+const { useProfile } = require('stremio/common');
 const { Image, SearchBar, Toggle, Video } = require('stremio/components');
 const SeasonsBar = require('./SeasonsBar');
 const { default: EpisodePicker } = require('../EpisodePicker');
@@ -12,6 +13,7 @@ const styles = require('./styles');
 
 const VideosList = ({ className, metaItem, libraryItem, season, seasonOnSelect, toggleNotifications }) => {
     const { core } = useServices();
+    const profile = useProfile();
     const showNotificationsToggle = React.useMemo(() => {
         return metaItem?.content?.content?.inLibrary && metaItem?.content?.content?.videos?.length;
     }, [metaItem]);
@@ -141,7 +143,7 @@ const VideosList = ({ className, metaItem, libraryItem, season, seasonOnSelect, 
                         <div className={styles['message-container']}>
                             <EpisodePicker className={styles['episode-picker']} onSubmit={onSeasonSearch} />
                             <Image className={styles['image']} src={require('/images/empty.png')} alt={' '} />
-                            <div className={styles['label']}>No videos found for this meta!</div>
+                            <div className={styles['label']}>{t('ERR_NO_VIDEOS_FOR_META')}</div>
                         </div>
                         :
                         <React.Fragment>
@@ -177,7 +179,7 @@ const VideosList = ({ className, metaItem, libraryItem, season, seasonOnSelect, 
                                             return search.length === 0 ||
                                                 (
                                                     (typeof video.title === 'string' && video.title.toLowerCase().includes(search.toLowerCase())) ||
-                                                    (!isNaN(video.released.getTime()) && video.released.toLocaleString(undefined, { year: '2-digit', month: 'short', day: 'numeric' }).toLowerCase().includes(search.toLowerCase()))
+                                                    (!isNaN(video.released.getTime()) && video.released.toLocaleString(profile.settings.interfaceLanguage, { year: '2-digit', month: 'short', day: 'numeric' }).toLowerCase().includes(search.toLowerCase()))
                                                 );
                                         })
                                         .map((video, index) => (

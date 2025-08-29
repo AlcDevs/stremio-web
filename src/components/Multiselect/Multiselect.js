@@ -1,6 +1,7 @@
 // Copyright (C) 2017-2023 Smart code 203358507
 
 const React = require('react');
+const { useTranslation } = require('react-i18next');
 const PropTypes = require('prop-types');
 const classnames = require('classnames');
 const { default: Icon } = require('@stremio/stremio-icons/react');
@@ -11,6 +12,7 @@ const useBinaryState = require('stremio/common/useBinaryState');
 const styles = require('./styles');
 
 const Multiselect = ({ className, mode, direction, title, disabled, dataset, options, renderLabelContent, renderLabelText, onOpen, onClose, onSelect, multiSelect, showIndex, ...props }) => {
+    const { t } = useTranslation();
     const [menuOpen, , closeMenu, toggleMenu] = useBinaryState(false);
     const filteredOptions = React.useMemo(() => {
         return Array.isArray(options) ?
@@ -131,7 +133,7 @@ const Multiselect = ({ className, mode, direction, title, disabled, dataset, opt
                     ))
                     :
                     <div className={styles['no-options-container']}>
-                        <div className={styles['label']}>No options available</div>
+                        <div className={styles['label']}>{t('NO_OPTIONS')}</div>
                     </div>
             }
         </div>

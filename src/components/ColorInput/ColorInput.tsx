@@ -1,75 +1,85 @@
 // Copyright (C) 2017-2023 Smart code 203358507
 
-const React = require('react');
-const PropTypes = require('prop-types');
-const classnames = require('classnames');
-const AColorPicker = require('a-color-picker');
-const { useTranslation } = require('react-i18next');
-const { Button } = require('stremio/components');
-const ModalDialog = require('stremio/components/ModalDialog');
-const useBinaryState = require('stremio/common/useBinaryState');
-const ColorPicker = require('./ColorPicker');
-const styles = require('./styles');
+import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import classnames from 'classnames';
+import * as AColorPicker from 'a-color-picker';
+import { useTranslation } from 'react-i18next';
+import { Button } from 'stremio/components';
+import ModalDialog from 'stremio/components/ModalDialog';
+import useBinaryState from 'stremio/common/useBinaryState';
+import ColorPicker from './ColorPicker';
+import styles from './ColorInput.less';
 
-const parseColor = (value) => {
+const parseColor = (value: string) => {
     const color = AColorPicker.parseColor(value, 'hexcss4');
     return typeof color === 'string' ? color : '#ffffffff';
 };
 
-const ColorInput = ({ className, value, dataset, onChange, ...props }) => {
+type Props = {
+    className: string,
+    value: string,
+    onChange?: (value: string) => void,
+    onClick?: (event: React.MouseEvent) => void,
+};
+
+const ColorInput = ({ className, value, onChange, ...props }: Props) => {
     const { t } = useTranslation();
     const [modalOpen, openModal, closeModal] = useBinaryState(false);
-    const [tempValue, setTempValue] = React.useState(() => {
+    const [tempValue, setTempValue] = useState(() => {
         return parseColor(value);
     });
-    const labelButtonStyle = React.useMemo(() => ({
+
+    const labelButtonStyle = useMemo(() => ({
         backgroundColor: value
     }), [value]);
-    const isTransparent = React.useMemo(() => {
+
+    const isTransparent = useMemo(() => {
         return parseColor(value).endsWith('00');
     }, [value]);
-    const labelButtonOnClick = React.useCallback((event) => {
+
+    const labelButtonOnClick = useCallback((event: React.MouseEvent) => {
         if (typeof props.onClick === 'function') {
             props.onClick(event);
         }
 
+        // @ts-expect-error: Property 'openModalPrevented' does not exist on type 'MouseEvent'.
         if (!event.nativeEvent.openModalPrevented) {
             openModal();
         }
     }, [props.onClick]);
-    const modalDialogOnClick = React.useCallback((event) => {
+
+    const modalDialogOnClick = useCallback((event: React.MouseEvent) => {
+        // @ts-expect-error: Property 'openModalPrevented' does not exist on type 'MouseEvent'.
         event.nativeEvent.openModalPrevented = true;
     }, []);
-    const modalButtons = React.useMemo(() => {
-        const selectButtonOnClick = (event) => {
+
+    const modalButtons = useMemo(() => {
+        const selectButtonOnClick = () => {
             if (typeof onChange === 'function') {
-                onChange({
-                    type: 'change',
-                    value: tempValue,
-                    dataset: dataset,
-                    reactEvent: event,
-                    nativeEvent: event.nativeEvent
-                });
+                onChange(tempValue);
             }
 
             closeModal();
         };
         return [
             {
-                label: 'Select',
+                label: t('SELECT'),
                 props: {
                     'data-autofocus': true,
                     onClick: selectButtonOnClick
                 }
             }
         ];
-    }, [tempValue, dataset, onChange]);
-    const colorPickerOnInput = React.useCallback((event) => {
-        setTempValue(parseColor(event.value));
+    }, [tempValue, onChange]);
+
+    const colorPickerOnInput = useCallback((color: string) => {
+        setTempValue(parseColor(color));
     }, []);
-    React.useLayoutEffect(() => {
+
+    useLayoutEffect(() => {
         setTempValue(parseColor(value));
     }, [value, modalOpen]);
+
     return (
         <Button title={isTransparent ? t('BUTTON_COLOR_TRANSPARENT') : value} {...props} style={labelButtonStyle} className={classnames(className, styles['color-input-container'])} onClick={labelButtonOnClick}>
             {
@@ -82,7 +92,7 @@ const ColorInput = ({ className, value, dataset, onChange, ...props }) => {
             }
             {
                 modalOpen ?
-                    <ModalDialog title={'Choose a color:'} buttons={modalButtons} onCloseRequest={closeModal} onClick={modalDialogOnClick}>
+                    <ModalDialog title={t('CHOOSE_COLOR')} buttons={modalButtons} onCloseRequest={closeModal} onClick={modalDialogOnClick}>
                         <ColorPicker className={styles['color-picker-container']} value={tempValue} onInput={colorPickerOnInput} />
                     </ModalDialog>
                     :
@@ -92,12 +102,4 @@ const ColorInput = ({ className, value, dataset, onChange, ...props }) => {
     );
 };
 
-ColorInput.propTypes = {
-    className: PropTypes.string,
-    value: PropTypes.string,
-    dataset: PropTypes.object,
-    onChange: PropTypes.func,
-    onClick: PropTypes.func
-};
-
-module.exports = ColorInput;
+export default ColorInput;

@@ -1,9 +1,9 @@
 // Copyright (C) 2017-2023 Smart code 203358507
 
 const React = require('react');
+const { useTranslation } = require('react-i18next');
 const PropTypes = require('prop-types');
 const classnames = require('classnames');
-const { t } = require('i18next');
 const { useRouteFocused } = require('stremio-router');
 const { default: Icon } = require('@stremio/stremio-icons/react');
 const { Button, Image, Popup } = require('stremio/components');
@@ -12,9 +12,10 @@ const useProfile = require('stremio/common/useProfile');
 const VideoPlaceholder = require('./VideoPlaceholder');
 const styles = require('./styles');
 
-const Video = ({ className, id, title, thumbnail, altThumbnail, season, episode, released, upcoming, watched, progress, scheduled, seasonWatched, deepLinks, onMarkVideoAsWatched, onMarkSeasonAsWatched, ...props }) => {
+const Video = React.forwardRef(({ className, id, title, thumbnail, altThumbnail, season, episode, released, upcoming, watched, progress, scheduled, seasonWatched, deepLinks, onMarkVideoAsWatched, onMarkSeasonAsWatched, ...props }, ref) => {
     const routeFocused = useRouteFocused();
     const profile = useProfile();
+    const { t } = useTranslation();
     const [menuOpen, , closeMenu, toggleMenu] = useBinaryState(false);
     const popupLabelOnMouseUp = React.useCallback((event) => {
         if (!event.nativeEvent.togglePopupPrevented) {
@@ -67,10 +68,27 @@ const Video = ({ className, id, title, thumbnail, altThumbnail, season, episode,
             }
         }
     }, [deepLinks]);
-    const renderLabel = React.useMemo(() => function renderLabel({ className, id, title, thumbnail, altThumbnail, episode, released, upcoming, watched, progress, scheduled, children, ...props }) {
+    const renderLabel = React.useMemo(() => function renderLabel({ className, id, title, thumbnail, altThumbnail, episode, released, upcoming, watched, progress, scheduled, children, ref: popupRef, ...props }) {
         const blurThumbnail = profile.settings.hideSpoilers && season && episode && !watched;
+        const handleRef = React.useCallback((node) => {
+            if (popupRef) {
+                if (typeof popupRef === 'function') {
+                    popupRef(node);
+                } else {
+                    popupRef.current = node;
+                }
+            }
+            if (ref) {
+                if (typeof ref === 'function') {
+                    ref(node);
+                } else {
+                    ref.current = node;
+                }
+            }
+        }, [popupRef]);
+
         return (
-            <Button {...props} className={classnames(className, styles['video-container'])} title={title}>
+            <Button {...props} className={classnames(className, styles['video-container'])} title={title} ref={handleRef}>
                 {
                     typeof thumbnail === 'string' && thumbnail.length > 0 ?
                         <div className={styles['thumbnail-container']}>
@@ -113,12 +131,12 @@ const Video = ({ className, id, title, thumbnail, altThumbnail, season, episode,
                         {
                             released instanceof Date && !isNaN(released.getTime()) ?
                                 <div className={styles['released-container']}>
-                                    {released.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                                    {released.toLocaleString(profile.settings.interfaceLanguage, { year: 'numeric', month: 'short', day: 'numeric' })}
                                 </div>
                                 :
                                 scheduled ?
-                                    <div className={styles['released-container']} title={'To be announced'}>
-                                        TBA
+                                    <div className={styles['released-container']} title={t('TBA')}>
+                                        {t('TBA')}
                                     </div>
                                     :
                                     null
@@ -127,7 +145,7 @@ const Video = ({ className, id, title, thumbnail, altThumbnail, season, episode,
                             {
                                 upcoming && !watched ?
                                     <div className={styles['upcoming-container']}>
-                                        <div className={styles['flag-label']}>Upcoming</div>
+                                        <div className={styles['flag-label']}>{t('UPCOMING')}</div>
                                     </div>
                                     :
                                     null
@@ -136,7 +154,7 @@ const Video = ({ className, id, title, thumbnail, altThumbnail, season, episode,
                                 watched ?
                                     <div className={styles['watched-container']}>
                                         <Icon className={styles['flag-icon']} name={'eye'} />
-                                        <div className={styles['flag-label']}>Watched</div>
+                                        <div className={styles['flag-label']}>{t('CTX_WATCHED')}</div>
                                     </div>
                                     :
                                     null
@@ -151,10 +169,10 @@ const Video = ({ className, id, title, thumbnail, altThumbnail, season, episode,
     const renderMenu = React.useMemo(() => function renderMenu() {
         return (
             <div className={styles['context-menu-content']} onPointerDown={popupMenuOnPointerDown} onContextMenu={popupMenuOnContextMenu} onClick={popupMenuOnClick} onKeyDown={popupMenuOnKeyDown}>
-                <Button className={styles['context-menu-option-container']} title={'Watch'}>
+                <Button className={styles['context-menu-option-container']} title={t('CTX_WATCH')}>
                     <div className={styles['context-menu-option-label']}>{t('CTX_WATCH')}</div>
                 </Button>
-                <Button className={styles['context-menu-option-container']} title={watched ? 'Mark as non-watched' : 'Mark as watched'} onClick={toggleWatchedOnClick}>
+                <Button className={styles['context-menu-option-container']} title={watched ? t('CTX_MARK_NON_WATCHED') : t('CTX_MARK_WATCHED')} onClick={toggleWatchedOnClick}>
                     <div className={styles['context-menu-option-label']}>{watched ? t('CTX_MARK_NON_WATCHED') : t('CTX_MARK_WATCHED')}</div>
                 </Button>
                 <Button className={styles['context-menu-option-container']} title={seasonWatched ? t('CTX_UNMARK_REST') : t('CTX_MARK_REST')} onClick={toggleWatchedSeasonOnClick}>
@@ -192,7 +210,7 @@ const Video = ({ className, id, title, thumbnail, altThumbnail, season, episode,
             renderMenu={renderMenu}
         />
     );
-};
+});
 
 Video.Placeholder = VideoPlaceholder;
 

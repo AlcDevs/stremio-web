@@ -1,0 +1,36 @@
+name: GitHub Pages Cleanup
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+
+      - name: Delete directories older than 1 year
+        run: |
+          for dir in $(find . -mindepth 1 -maxdepth 2 -type d -not -path '*/\.*'); do
+            if ! git log -1 --since="1 year ago" -- "$dir" | grep -q .; then
+              echo "Deleting $dir"
+              rm -rf "$dir"
+            fi
+          done
+
+      - name: Commit and push
+        run: |
+          git config --global user.name 'GitHub Pages Cleanup'
+          git config --global user.email 'actions@stremio.com'
+          git add -A
+          git diff --cached --quiet || git commit -m "cleanup"
+          git push origin gh-pages

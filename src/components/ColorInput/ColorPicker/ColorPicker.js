@@ -29,10 +29,7 @@ const ColorPicker = ({ className, value, onInput }) => {
     React.useLayoutEffect(() => {
         if (typeof onInput === 'function') {
             pickerRef.current.on('change', (picker, value) => {
-                onInput({
-                    type: 'input',
-                    value: parseColor(value)
-                });
+                onInput(parseColor(value));
             });
         }
         return () => {
