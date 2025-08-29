@@ -187,6 +187,7 @@ function Shell({ core }) {
             console.log('WebView Transport');
             transport = new WebViewTransport({ core });
         }
+        transport.playLocalFile = playLocalFile;
         transport.on('init', onTransportInit);
         transport.on('init-error', onTransportInitError);
         // General AppEvents

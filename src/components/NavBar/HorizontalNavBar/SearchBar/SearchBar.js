@@ -15,9 +15,11 @@ const useSearchHistory = require('./useSearchHistory');
 const useLocalSearch = require('./useLocalSearch');
 const styles = require('./styles');
 const useBinaryState = require('stremio/common/useBinaryState');
+const { useServices } = require('stremio/services');
 
 const SearchBar = React.memo(({ className, query, active }) => {
     const { t } = useTranslation();
+    const { shell } = useServices();
     const routeFocused = useRouteFocused();
     const searchHistory = useSearchHistory();
     const localSearch = useLocalSearch();
@@ -57,6 +59,8 @@ const SearchBar = React.memo(({ className, query, active }) => {
             } catch (error) {
                 console.error('Failed to create torrent from magnet:', error);
             }
+        } else if (shell && shell.transport && value.startsWith('http')) {
+            shell.transport.playLocalFile(value);
         } else {
             setCurrentQuery(value);
         }

@@ -17,7 +17,7 @@ const styles = require('./styles');
 
 const NavMenuContent = ({ onClick }) => {
     const { t } = useTranslation();
-    const { core } = useServices();
+    const { core, shell } = useServices();
     const profile = useProfile();
     const streamingServer = useStreamingServer();
     const { createTorrentFromMagnet } = useTorrent();
@@ -40,7 +40,11 @@ const NavMenuContent = ({ onClick }) => {
     const onPlayMagnetLinkClick = React.useCallback(async () => {
         try {
             const clipboardText = await navigator.clipboard.readText();
-            createTorrentFromMagnet(clipboardText);
+            if (shell && shell.transport && clipboardText.startsWith('http')) {
+                shell.transport.playLocalFile(clipboardText);
+            } else {
+                createTorrentFromMagnet(clipboardText);
+            }
         } catch(e) {
             console.error(e);
         }
