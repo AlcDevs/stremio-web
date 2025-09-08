@@ -15,6 +15,7 @@ interface StorageData {
     useMpvForExternalSubtitles: boolean;
     embeddedSubDelay: boolean;
     isDiscordRpcOn: boolean;
+    parseOnPaste: boolean;
     maxVolume: string;
 }
 
@@ -34,6 +35,7 @@ const localProfile: StorageData = {
     useMpvForExternalSubtitles: true,
     embeddedSubDelay: true,
     isDiscordRpcOn: true,
+    parseOnPaste: true,
     maxVolume: '130',
 };
 

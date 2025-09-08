@@ -16,10 +16,12 @@ const useLocalSearch = require('./useLocalSearch');
 const styles = require('./styles');
 const useBinaryState = require('stremio/common/useBinaryState');
 const { useServices } = require('stremio/services');
+const {useStorage} = require('stremio/common/Platform');
 
 const SearchBar = React.memo(({ className, query, active }) => {
     const { t } = useTranslation();
     const { shell } = useServices();
+    const [storage,] = useStorage();
     const routeFocused = useRouteFocused();
     const searchHistory = useSearchHistory();
     const localSearch = useLocalSearch();
@@ -50,31 +52,51 @@ const SearchBar = React.memo(({ className, query, active }) => {
         };
     }, [searchHistoryOnClose]);
 
-    const queryInputOnChange = React.useCallback(() => {
-        const value = searchInputRef.current.value;
-        openHistory();
+    const checkMagnetOrHttp = React.useCallback((value) => {
         if (value.startsWith('magnet:')) {
             try {
                 createTorrentFromMagnet(value);
+                return true;
             } catch (error) {
                 console.error('Failed to create torrent from magnet:', error);
+                return false;
             }
         } else if (shell && shell.transport && value.startsWith('http')) {
             shell.transport.playLocalFile(value);
+            return true;
+        } else {
+            return false;
+        }
+    }, [createTorrentFromMagnet, storage]);
+
+    const queryInputOnChange = React.useCallback(() => {
+        const value = searchInputRef.current.value;
+        openHistory();
+        if (storage.parseOnPaste) {
+            if (checkMagnetOrHttp(value)) {
+                return;
+            }
+            setCurrentQuery(value);
         } else {
             setCurrentQuery(value);
         }
-    }, [createTorrentFromMagnet]);
+    }, [createTorrentFromMagnet, storage]);
 
     const queryInputOnSubmit = React.useCallback((event) => {
         event.preventDefault();
-        const searchValue = `/search?search=${encodeURIComponent(event.target.value)}`;
+        const value = event.target.value;
+        if (!storage.parseOnPaste) {
+            if (checkMagnetOrHttp(value)) {
+                return;
+            }
+        }
+        const searchValue = `/search?search=${encodeURIComponent(value)}`;
         setCurrentQuery(searchValue);
         if (searchInputRef.current && searchValue) {
             window.location.hash = searchValue;
             closeHistory();
         }
-    }, []);
+    }, [storage]);
 
     const queryInputClear = React.useCallback(() => {
         searchInputRef.current.value = '';
