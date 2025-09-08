@@ -30,14 +30,8 @@ const Addons = ({ urlParams, queryParams }) => {
     const [extensionMappings, setExtensionMappings] = React.useState([]);
 
     function getRawQueryParam(paramName) {
-        const search = window.location.hash.split('?')[1] || '';
-        const pairs = search.split('&');
-        for (const pair of pairs) {
-            if (!pair) continue;
-            const [key, value = ''] = pair.split('=');
-            if (key === paramName) return value;
-        }
-        return undefined;
+        const q = window.location.hash.split('?')[1] || '';
+        return new URLSearchParams(q).get(paramName);
     }
 
     React.useEffect(() => {
