@@ -1,13 +1,13 @@
 // Copyright (C) 2017-2023 Smart code 203358507
 
-import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import isEqual from 'lodash.isequal';
-import { useServices } from 'stremio/services';
+const React = require('react');
+const { useTranslation } = require('react-i18next');
+const isEqual = require('lodash.isequal');
+const { useServices } = require('stremio/services');
 
 const CACHE_SIZES = [0, 2147483648, 5368709120, 10737418240, null];
 
-const cacheSizeToString = (size: number | null) => {
+const cacheSizeToString = (size) => {
     return size === null ?
         'Infinite'
         :
@@ -17,16 +17,7 @@ const cacheSizeToString = (size: number | null) => {
             `${Math.ceil(((size / 1024 / 1024 / 1024) + Number.EPSILON) * 100) / 100}GiB`;
 };
 
-type TorrentProfile = {
-    btDownloadSpeedHardLimit: number,
-    btDownloadSpeedSoftLimit: number,
-    btHandshakeTimeout: number,
-    btMaxConnections: number,
-    btMinPeersForStable: number,
-    btRequestTimeout: number
-};
-
-const TORRENT_PROFILES: Record<string, TorrentProfile> = {
+const TORRENT_PROFILES = {
     default: {
         btDownloadSpeedHardLimit: 3670016,
         btDownloadSpeedSoftLimit: 2621440,
@@ -61,32 +52,17 @@ const TORRENT_PROFILES: Record<string, TorrentProfile> = {
     }
 };
 
-const useStreamingOptions = (streamingServer: StreamingServer) => {
+const useStreamingServerSettingsInputs = (streamingServer) => {
     const { core } = useServices();
     const { t } = useTranslation();
     // TODO combine those useMemo in one
 
-    const settings = useMemo(() => (
-        streamingServer?.settings?.type === 'Ready' ?
-            streamingServer.settings.content as StreamingServerSettings : null
-    ), [streamingServer.settings]);
-
-    const networkInfo = useMemo(() => (
-        streamingServer?.networkInfo?.type === 'Ready' ?
-            streamingServer.networkInfo.content as NetworkInfo : null
-    ), [streamingServer.networkInfo]);
-
-    const deviceInfo = useMemo(() => (
-        streamingServer?.deviceInfo?.type === 'Ready' ?
-            streamingServer.deviceInfo.content as DeviceInfo : null
-    ), [streamingServer.deviceInfo]);
-
-    const streamingServerRemoteUrlInput = useMemo(() => ({
+    const streamingServerRemoteUrlInput = React.useMemo(() => ({
         value: streamingServer.remoteUrl,
     }), [streamingServer.remoteUrl]);
 
-    const remoteEndpointSelect = useMemo(() => {
-        if (!settings || !networkInfo) {
+    const remoteEndpointSelect = React.useMemo(() => {
+        if (streamingServer.settings?.type !== 'Ready' || streamingServer.networkInfo?.type !== 'Ready') {
             return null;
         }
 
@@ -96,29 +72,29 @@ const useStreamingOptions = (streamingServer: StreamingServer) => {
                     label: t('SETTINGS_DISABLED'),
                     value: '',
                 },
-                ...networkInfo.availableInterfaces.map((address) => ({
+                ...streamingServer.networkInfo.content.availableInterfaces.map((address) => ({
                     label: address,
                     value: address,
                 }))
             ],
-            value: settings.remoteHttps,
-            onSelect: (value: string | null) => {
+            selected: [streamingServer.settings.content.remoteHttps],
+            onSelect: (event) => {
                 core.transport.dispatch({
                     action: 'StreamingServer',
                     args: {
                         action: 'UpdateSettings',
                         args: {
-                            ...settings,
-                            remoteHttps: value,
+                            ...streamingServer.settings.content,
+                            remoteHttps: event.value,
                         }
                     }
                 });
             }
         };
-    }, [settings, networkInfo]);
+    }, [streamingServer.settings, streamingServer.networkInfo]);
 
-    const cacheSizeSelect = useMemo(() => {
-        if (!settings) {
+    const cacheSizeSelect = React.useMemo(() => {
+        if (streamingServer.settings === null || streamingServer.settings.type !== 'Ready') {
             return null;
         }
 
@@ -127,37 +103,36 @@ const useStreamingOptions = (streamingServer: StreamingServer) => {
                 label: cacheSizeToString(size),
                 value: JSON.stringify(size)
             })),
-            value: JSON.stringify(settings.cacheSize),
-            title: () => {
-                return cacheSizeToString(settings.cacheSize);
+            selected: [JSON.stringify(streamingServer.settings.content.cacheSize)],
+            renderLabelText: () => {
+                return cacheSizeToString(streamingServer.settings.content.cacheSize);
             },
-            onSelect: (value: any) => {
+            onSelect: (event) => {
                 core.transport.dispatch({
                     action: 'StreamingServer',
                     args: {
                         action: 'UpdateSettings',
                         args: {
-                            ...settings,
-                            cacheSize: JSON.parse(value),
+                            ...streamingServer.settings.content,
+                            cacheSize: JSON.parse(event.value),
                         }
                     }
                 });
             }
         };
-    }, [settings]);
-
-    const torrentProfileSelect = useMemo(() => {
-        if (!settings) {
+    }, [streamingServer.settings]);
+    const torrentProfileSelect = React.useMemo(() => {
+        if (streamingServer.settings === null || streamingServer.settings.type !== 'Ready') {
             return null;
         }
 
         const selectedTorrentProfile = {
-            btDownloadSpeedHardLimit: settings.btDownloadSpeedHardLimit,
-            btDownloadSpeedSoftLimit: settings.btDownloadSpeedSoftLimit,
-            btHandshakeTimeout: settings.btHandshakeTimeout,
-            btMaxConnections: settings.btMaxConnections,
-            btMinPeersForStable: settings.btMinPeersForStable,
-            btRequestTimeout: settings.btRequestTimeout
+            btDownloadSpeedHardLimit: streamingServer.settings.content.btDownloadSpeedHardLimit,
+            btDownloadSpeedSoftLimit: streamingServer.settings.content.btDownloadSpeedSoftLimit,
+            btHandshakeTimeout: streamingServer.settings.content.btHandshakeTimeout,
+            btMaxConnections: streamingServer.settings.content.btMaxConnections,
+            btMinPeersForStable: streamingServer.settings.content.btMinPeersForStable,
+            btRequestTimeout: streamingServer.settings.content.btRequestTimeout
         };
         const isCustomTorrentProfileSelected = Object.values(TORRENT_PROFILES).every((torrentProfile) => {
             return !isEqual(torrentProfile, selectedTorrentProfile);
@@ -165,7 +140,7 @@ const useStreamingOptions = (streamingServer: StreamingServer) => {
         return {
             options: Object.keys(TORRENT_PROFILES)
                 .map((profileName) => ({
-                    label: t('TORRENT_PROFILE_' + profileName.replace(' ', '_').toUpperCase()),
+                    label: profileName,
                     value: JSON.stringify(TORRENT_PROFILES[profileName])
                 }))
                 .concat(
@@ -177,24 +152,23 @@ const useStreamingOptions = (streamingServer: StreamingServer) => {
                         :
                         []
                 ),
-            value: JSON.stringify(selectedTorrentProfile),
-            onSelect: (value: any) => {
+            selected: [JSON.stringify(selectedTorrentProfile)],
+            onSelect: (event) => {
                 core.transport.dispatch({
                     action: 'StreamingServer',
                     args: {
                         action: 'UpdateSettings',
                         args: {
-                            ...settings,
-                            ...JSON.parse(value),
+                            ...streamingServer.settings.content,
+                            ...JSON.parse(event.value),
                         }
                     }
                 });
             }
         };
-    }, [settings]);
-
-    const transcodingProfileSelect = useMemo(() => {
-        if (!settings || !deviceInfo) {
+    }, [streamingServer.settings]);
+    const transcodingProfileSelect = React.useMemo(() => {
+        if (streamingServer.settings?.type !== 'Ready' || streamingServer.deviceInfo?.type !== 'Ready') {
             return null;
         }
 
@@ -204,34 +178,27 @@ const useStreamingOptions = (streamingServer: StreamingServer) => {
                     label: t('SETTINGS_DISABLED'),
                     value: null,
                 },
-                ...deviceInfo.availableHardwareAccelerations.map((name) => ({
+                ...streamingServer.deviceInfo.content.availableHardwareAccelerations.map((name) => ({
                     label: name,
                     value: name,
                 }))
             ],
-            value: settings.transcodeProfile,
-            onSelect: (value: string | null) => {
+            selected: [streamingServer.settings.content.transcodeProfile],
+            onSelect: (event) => {
                 core.transport.dispatch({
                     action: 'StreamingServer',
                     args: {
                         action: 'UpdateSettings',
                         args: {
-                            ...settings,
-                            transcodeProfile: value,
+                            ...streamingServer.settings.content,
+                            transcodeProfile: event.value,
                         }
                     }
                 });
             }
         };
-    }, [settings, deviceInfo]);
-
-    return {
-        streamingServerRemoteUrlInput,
-        remoteEndpointSelect,
-        cacheSizeSelect,
-        torrentProfileSelect,
-        transcodingProfileSelect,
-    };
+    }, [streamingServer.settings, streamingServer.deviceInfo]);
+    return { streamingServerRemoteUrlInput, remoteEndpointSelect, cacheSizeSelect, torrentProfileSelect, transcodingProfileSelect };
 };
 
-export default useStreamingOptions;
+module.exports = useStreamingServerSettingsInputs;

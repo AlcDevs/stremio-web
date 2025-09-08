@@ -225,11 +225,11 @@ module.exports = (env, argv) => ({
             cleanOnceBeforeBuildPatterns: ['*']
         }),
         argv.mode === 'production' &&
-            new WorkboxPlugin.GenerateSW({
-                maximumFileSizeToCacheInBytes: 20000000,
-                clientsClaim: true,
-                skipWaiting: true
-            }),
+        new WorkboxPlugin.GenerateSW({
+            maximumFileSizeToCacheInBytes: 20000000,
+            clientsClaim: true,
+            skipWaiting: true
+        }),
         new CopyWebpackPlugin({
             patterns: [
                 { from: 'favicons', to: 'favicons' },
@@ -300,4 +300,4 @@ module.exports = (env, argv) => ({
             ios: true
         }),
     ].filter(Boolean)
-});
+})

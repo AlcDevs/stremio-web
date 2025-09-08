@@ -8,7 +8,7 @@ const Calendar = require('./Calendar').default;
 const MetaDetails = require('./MetaDetails');
 const NotFound = require('./NotFound');
 const Search = require('./Search');
-const { default: Settings } = require('./Settings');
+const Settings = require('./Settings');
 const Player = require('./Player');
 const Intro = require('./Intro');
 
@@ -24,4 +24,4 @@ module.exports = {
     Settings,
     Player,
     Intro
-};
+}
