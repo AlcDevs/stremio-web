@@ -108,14 +108,14 @@ const useProfileSettingsInputs = (profile) => {
     }), [profile.settings]);
     const subtitlesTextColorInput = React.useMemo(() => ({
         value: profile.settings.subtitlesTextColor,
-        onChange: (event) => {
+        onChange: (value) => {
             core.transport.dispatch({
                 action: 'Ctx',
                 args: {
                     action: 'UpdateSettings',
                     args: {
                         ...profile.settings,
-                        subtitlesTextColor: event.value
+                        subtitlesTextColor: value
                     }
                 }
             });
@@ -123,14 +123,14 @@ const useProfileSettingsInputs = (profile) => {
     }), [profile.settings]);
     const subtitlesBackgroundColorInput = React.useMemo(() => ({
         value: profile.settings.subtitlesBackgroundColor,
-        onChange: (event) => {
+        onChange: (value) => {
             core.transport.dispatch({
                 action: 'Ctx',
                 args: {
                     action: 'UpdateSettings',
                     args: {
                         ...profile.settings,
-                        subtitlesBackgroundColor: event.value
+                        subtitlesBackgroundColor: value
                     }
                 }
             });
@@ -138,14 +138,14 @@ const useProfileSettingsInputs = (profile) => {
     }), [profile.settings]);
     const subtitlesOutlineColorInput = React.useMemo(() => ({
         value: profile.settings.subtitlesOutlineColor,
-        onChange: (event) => {
+        onChange: (value) => {
             core.transport.dispatch({
                 action: 'Ctx',
                 args: {
                     action: 'UpdateSettings',
                     args: {
                         ...profile.settings,
-                        subtitlesOutlineColor: event.value
+                        subtitlesOutlineColor: value
                     }
                 }
             });
