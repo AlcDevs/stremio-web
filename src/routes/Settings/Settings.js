@@ -624,6 +624,17 @@ const Settings = () => {
                         </div>
                         <div className={styles['option-container']}>
                             <div className={styles['option-name-container']}>
+                                <div className={styles['label']}>{'Default Playback Speed'}</div>
+                            </div>
+                            <Multiselect
+                                className={classnames(styles['option-input-container'], styles['multiselect-container'])}
+                                options={[...defaultsMultiSelect.defaultPlaybackSpeed]}
+                                selected={[storage.playbackSpeed]}
+                                onSelect={updateStorageValue('playbackSpeed')}
+                            />
+                        </div>
+                        <div className={styles['option-container']}>
+                            <div className={styles['option-name-container']}>
                                 <div className={styles['label']}>{t('SETTINGS_SURROUND_SOUND')}</div>
                             </div>
                             <Toggle

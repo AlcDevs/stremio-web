@@ -17,6 +17,7 @@ interface StorageData {
     isDiscordRpcOn: boolean;
     parseOnPaste: boolean;
     maxVolume: string;
+    playbackSpeed: string;
 }
 
 // Central default values for storage data
@@ -37,6 +38,7 @@ const localProfile: StorageData = {
     isDiscordRpcOn: true,
     parseOnPaste: true,
     maxVolume: '130',
+    playbackSpeed: '1'
 };
 
 export const defaultsMultiSelect = {
@@ -47,6 +49,10 @@ export const defaultsMultiSelect = {
     defaultMaxVolume: ['75', '100', '125', '130', '150', '175', '200', '225'].map((keyword) => ({
         value: keyword,
         label: keyword + '%'
+    })),
+    defaultPlaybackSpeed: ['0.5', '0.75', '1', '1.25', '1.5', '1.75', '2'].map((keyword) => ({
+        value: keyword,
+        label: keyword + 'x'
     })),
     defaultSubSelectionMode: [
         {

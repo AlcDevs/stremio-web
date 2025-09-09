@@ -931,6 +931,7 @@ const Player = ({ urlParams, queryParams }) => {
         shell.send('mpv-set-prop', ['subs-match-os-language', 'no']);
         shell.send('mpv-set-prop', ['subs-fallback', 'no']);
         shell.send('mpv-set-prop', ['subs-fallback-forced', 'no']);
+        shell.send('mpv-set-prop', ['speed', storage.playbackSpeed]);
 
         return () => {
             video.events.off('error', onError);
