@@ -59,6 +59,11 @@ function KeyboardShortcuts() {
 
                 break;
             }
+            case 'KeyF': {
+                event.preventDefault();
+                document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+                break;
+            }
         }
     }
     function onStateChanged() {
