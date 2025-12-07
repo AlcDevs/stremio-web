@@ -2,6 +2,7 @@
     "name": "stremio",
     "displayName": "Stremio",
     "version": "5.0.0-beta.29",
+    "subVersion": "40",
     "author": "Smart Code OOD",
     "private": true,
     "license": "gpl-2.0",
@@ -43,7 +44,7 @@
         "react-i18next": "^15.1.3",
         "react-is": "18.3.1",
         "spatial-navigation-polyfill": "github:Stremio/spatial-navigation#64871b1422466f5f45d24ebc8bbd315b2ebab6a6",
-        "stremio-translations": "github:Stremio/stremio-translations#01aaa201e419782b26b9f2cbe4430795021426e5",
+        "stremio-translations": "github:Stremio/stremio-translations#927cf762fbf2abb6ca6727fa539c3000878f39d5",
         "url": "0.11.4",
         "use-long-press": "^3.2.0"
     },

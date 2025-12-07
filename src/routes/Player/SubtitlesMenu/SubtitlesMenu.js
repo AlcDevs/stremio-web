@@ -284,7 +284,7 @@ const SubtitlesMenu = React.memo((props) => {
                 />
                 <DiscreteSelectInput
                     className={styles['discrete-input']}
-                    label={t('PLAYER_SUBTITLES_VERTICAL_POSIITON')}
+                    label={t('PLAYER_SUBTITLES_VERTICAL_POSITION')}
                     value={
                         typeof props.selectedSubtitlesTrackId === 'string' ?
                             props.subtitlesOffset !== null && !isNaN(props.subtitlesOffset) ? `${props.subtitlesOffset}%` : '--'

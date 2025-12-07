@@ -8,7 +8,9 @@ const langs = require('langs');
 const { useTranslation } = require('react-i18next');
 const { useRouteFocused } = require('stremio-router');
 const { useServices } = require('stremio/services');
-const { useSettings, useFullscreen, useBinaryState, useToast, useStreamingServer, withCoreSuspender, useProfile, useStorage, useShell, usePlatform } = require('stremio/common');
+const { useSettings, useFullscreen, useBinaryState, useToast, useStreamingServer, withCoreSuspender, useProfile, useStorage, useShell,
+    usePlatform
+} = require('stremio/common');
 const { HorizontalNavBar, Transition, ContextMenu } = require('stremio/components');
 const BufferingLoader = require('./BufferingLoader');
 const VolumeChangeIndicator = require('./VolumeChangeIndicator');
@@ -35,7 +37,7 @@ const Player = ({ urlParams, queryParams }) => {
     const forceTranscoding = React.useMemo(() => {
         return queryParams.has('forceTranscoding');
     }, [queryParams]);
-    const profile = useProfile();
+
     const [player, videoParamsChanged, timeChanged, seek, pausedChanged, ended, nextVideo] = usePlayer(urlParams);
     const [settings, updateSettings] = useSettings();
     const [storage, updateStorage] = useStorage();
@@ -45,6 +47,7 @@ const Player = ({ urlParams, queryParams }) => {
     const routeFocused = useRouteFocused();
     const platform = usePlatform();
     const toast = useToast();
+    const profile = useProfile();
 
     const [seeking, setSeeking] = React.useState(false);
 
@@ -175,30 +178,6 @@ const Player = ({ urlParams, queryParams }) => {
         video.setProp('extraSubtitlesOutlineColor', settings.subtitlesOutlineColor);
     }, [settings.subtitlesSize, settings.subtitlesOffset, settings.subtitlesTextColor, settings.subtitlesBackgroundColor, settings.subtitlesOutlineColor]);
 
-    const handleNextVideoNavigation = React.useCallback((deepLinks, bingeWatching, ended) => {
-        if (ended) {
-            if (bingeWatching) {
-                if (deepLinks.player) {
-                    isNavigating.current = true;
-                    window.location.replace(deepLinks.player);
-                } else if (deepLinks.metaDetailsStreams) {
-                    isNavigating.current = true;
-                    window.location.replace(deepLinks.metaDetailsStreams);
-                }
-            } else {
-                window.history.back();
-            }
-        } else {
-            if (deepLinks.player) {
-                isNavigating.current = true;
-                window.location.replace(deepLinks.player);
-            } else if (deepLinks.metaDetailsStreams) {
-                isNavigating.current = true;
-                window.location.replace(deepLinks.metaDetailsStreams);
-            }
-        }
-    }, []);
-
     const onEnded = React.useCallback(() => {
         player.nextVideo = nextVideoInitialData.current;
         if (isNavigating.current) {
@@ -206,12 +185,8 @@ const Player = ({ urlParams, queryParams }) => {
         }
 
         ended();
-        if (window.playerNextVideo !== null) {
-            nextVideo();
-
-            const deepLinks = window.playerNextVideo.deepLinks;
-            handleNextVideoNavigation(deepLinks, profile.settings.bingeWatching, true);
-
+        if (player.nextVideo !== null) {
+            onNextVideoRequested();
         } else {
             window.history.back();
         }
@@ -371,9 +346,14 @@ const Player = ({ urlParams, queryParams }) => {
             nextVideo();
 
             const deepLinks = player.nextVideo.deepLinks;
-            handleNextVideoNavigation(deepLinks, profile.settings.bingeWatching, false);
+            if (deepLinks.metaDetailsStreams && deepLinks.player) {
+                window.location.replace(deepLinks.metaDetailsStreams);
+                window.location.href = deepLinks.player;
+            } else {
+                window.location.replace(deepLinks.player ?? deepLinks.metaDetailsStreams);
+            }
         }
-    }, [player.nextVideo, handleNextVideoNavigation, profile.settings]);
+    }, [player.nextVideo]);
 
     const onVideoClick = React.useCallback(() => {
         if (video.state.paused !== null) {
@@ -458,9 +438,9 @@ const Player = ({ urlParams, queryParams }) => {
                 },
                 autoplay: true,
                 time: player.libraryItem !== null &&
-                    player.selected.streamRequest !== null &&
-                    player.selected.streamRequest.path !== null &&
-                    player.libraryItem.state.video_id === player.selected.streamRequest.path.id ?
+                player.selected.streamRequest !== null &&
+                player.selected.streamRequest.path !== null &&
+                player.libraryItem.state.video_id === player.selected.streamRequest.path.id ?
                     player.libraryItem.state.timeOffset
                     :
                     0,
@@ -476,7 +456,7 @@ const Player = ({ urlParams, queryParams }) => {
                         streamingServer.selected.transportUrl
                     :
                     null,
-                seriesInfo: player.seriesInfo
+                seriesInfo: player.seriesInfo,
             }, {
                 chromecastTransport: services.chromecast.active ? services.chromecast.transport : null,
                 shellTransport: services.shell.active ? services.shell.transport : null,
@@ -533,7 +513,7 @@ const Player = ({ urlParams, queryParams }) => {
     }, [video.state.videoParams]);
 
     React.useEffect(() => {
-        if (player.nextVideo !== null && !nextVideoPopupDismissed.current) {
+        if (!!settings.bingeWatching && player.nextVideo !== null && !nextVideoPopupDismissed.current) {
             if (video.state.time !== null && video.state.duration !== null && video.state.time < video.state.duration && (video.state.duration - video.state.time) <= settings.nextVideoNotificationDuration) {
                 openNextVideoPopup();
             } else {
@@ -708,8 +688,7 @@ const Player = ({ urlParams, queryParams }) => {
     React.useEffect(() => {
         if (!navigator.mediaSession) return;
 
-        const playbackState = !video.state.paused ? 'playing' : 'paused';
-        navigator.mediaSession.playbackState = playbackState;
+        navigator.mediaSession.playbackState = !video.state.paused ? 'playing' : 'paused';
 
         return () => navigator.mediaSession.playbackState = 'none';
     }, [video.state.paused]);
@@ -1024,10 +1003,10 @@ const Player = ({ urlParams, queryParams }) => {
 
     return (
         <div className={classnames(styles['player-container'], { [styles['overlayHidden']]: overlayHidden })}
-            onMouseDown={onContainerMouseDown}
-            onMouseMove={onContainerMouseMove}
-            onMouseOver={onContainerMouseMove}
-            onMouseLeave={onContainerMouseLeave}>
+             onMouseDown={onContainerMouseDown}
+             onMouseMove={onContainerMouseMove}
+             onMouseOver={onContainerMouseMove}
+             onMouseLeave={onContainerMouseLeave}>
             <Video
                 ref={video.containerElement}
                 className={styles['layer']}
