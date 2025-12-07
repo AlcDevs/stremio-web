@@ -54,8 +54,8 @@ const OptionsMenu = ({ className, stream, playbackDevices, extraSubtitlesTracks,
         }
     }, [streamingUrl, downloadUrl]);
     const onDownloadVideoButtonClick = React.useCallback(() => {
-        if (streamingUrl || downloadUrl) {
-            platform.openExternal(streamingUrl || downloadUrl);
+        if (downloadUrl || streamingUrl ) {
+            platform.openExternal(downloadUrl || streamingUrl);
         }
     }, [streamingUrl, downloadUrl]);
 
