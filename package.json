@@ -14,6 +14,12 @@
         "lint": "eslint src",
         "scan-translations": "pnpx jest ./tests/i18nScan.test.js"
     },
+    "jest": {
+        "testPathIgnorePatterns": [
+            "/node_modules/",
+            "<rootDir>/webmods-tests/"
+        ]
+    },
     "dependencies": {
         "@babel/runtime": "7.26.0",
         "@sentry/browser": "8.42.0",
