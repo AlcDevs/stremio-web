@@ -59,6 +59,15 @@
     <link rel="apple-touch-startup-image" href="<%= htmlWebpackPlugin.options.imagesPath %>/splash/apple-splash-1136-640.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
     <link rel="manifest" href="manifest.json" />
     <title>Stremio - Freedom to Stream</title>
+    <!-- Webmods: plain injected .js/.css, see webmods/AGENTS.md. Loaded before the
+         app bundle below so they observe/patch the DOM the same way the native
+         shell's own script injection does. -->
+    <% htmlWebpackPlugin.options.webmodFiles.filter((f) => f.endsWith('.css')).forEach((f) => { %>
+    <link rel="stylesheet" href="webmods/<%= f %>">
+    <% }) %>
+    <% htmlWebpackPlugin.options.webmodFiles.filter((f) => f.endsWith('.js')).forEach((f) => { %>
+    <script src="webmods/<%= f %>"></script>
+    <% }) %>
     <%= htmlWebpackPlugin.tags.headTags %>
 </head>
 

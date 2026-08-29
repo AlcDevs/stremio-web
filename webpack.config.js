@@ -1,5 +1,6 @@
 // Copyright (C) 2017-2023 Smart code 203358507
 
+const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { execSync } = require('child_process');
@@ -13,6 +14,15 @@ const TerserPlugin = require('terser-webpack-plugin');
 const packageJson = require('./package.json');
 
 const COMMIT_HASH = execSync('git rev-parse HEAD').toString().trim();
+
+// Webmods: plain injected .js/.css, no build step of their own (see webmods/AGENTS.md).
+// Copied into the build as-is and loaded via <script>/<link> tags added to every
+// page load, so they apply the same way whether the page is opened through the
+// native shell (which injects them itself) or as a plain website.
+const WEBMODS_DIR = path.resolve(__dirname, 'webmods');
+const webmodFiles = fs.existsSync(WEBMODS_DIR)
+    ? fs.readdirSync(WEBMODS_DIR).filter((f) => f.endsWith('.js') || f.endsWith('.css')).sort()
+    : [];
 
 const THREAD_LOADER = {
     loader: 'thread-loader',
@@ -233,6 +243,9 @@ module.exports = (env, argv) => ({
                 { from: 'assets/screenshots/*.webp', to: 'screenshots/[name][ext]' },
                 { from: '.well-known', to: '.well-known' },
                 { from: 'manifest.json', to: 'manifest.json' },
+                // Only .js/.css - webmods/ also holds non-web-facing extras
+                // (docs, archived theme experiments) that must not ship.
+                { from: 'webmods/*.(js|css)', to: 'webmods/[name][ext]', noErrorOnMissing: true },
             ]
         }),
         new MiniCssExtractPlugin({
@@ -244,6 +257,7 @@ module.exports = (env, argv) => ({
             scriptLoading: 'blocking',
             faviconsPath: 'favicons',
             imagesPath: 'images',
+            webmodFiles,
         }),
     ].filter(Boolean)
 });
