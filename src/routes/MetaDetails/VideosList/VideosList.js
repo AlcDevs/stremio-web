@@ -114,6 +114,25 @@ const VideosList = ({ className, metaItem, libraryItem, season, seasonOnSelect, 
         });
     };
 
+    const getAltThumbnail = React.useCallback((video, currentSeason) => {
+        if (currentSeason === null || typeof video.thumbnail !== 'string' || video.thumbnail.length === 0 || typeof video.episode !== 'number' || isNaN(video.episode)) return '';
+        const previousEpisodes = videos.filter((videoData) =>
+            videoData.season !== null && videoData.season !== 0 && videoData.season && videoData.season < currentSeason
+        ).length;
+        if (isNaN(previousEpisodes) || previousEpisodes === 0) return '';
+        //Fallback correction for Animes
+        const correctedEpisode = previousEpisodes + video.episode;
+        // This regex assumes the URL is in the format:
+        // protocol://domain/id/season/episode/rest
+        return video.thumbnail.replace(
+            /^(https?:\/\/[^/]+\/[^/]+)\/(\d+)\/(\d+)(\/.*)$/,
+            (_, base, origSeason, origEpisode, rest) => {
+                // Replace the season with "1" and the episode with the corrected value
+                return `${base}/1/${correctedEpisode}${rest}`;
+            }
+        );
+    }, [videos]);
+
     const onMarkSeasonAsWatched = (season, watched) => {
         core.transport.dispatch({
             action: 'MetaDetails',
@@ -200,6 +219,7 @@ const VideosList = ({ className, metaItem, libraryItem, season, seasonOnSelect, 
                                                 thumbnail={video.thumbnail}
                                                 season={video.season}
                                                 episode={video.episode}
+                                                altThumbnail={getAltThumbnail(video, selectedSeason)}
                                                 released={video.released}
                                                 upcoming={video.upcoming}
                                                 watched={video.watched}

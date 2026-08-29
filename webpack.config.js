@@ -221,11 +221,11 @@ module.exports = (env, argv) => ({
             Buffer: ['buffer', 'Buffer']
         }),
         argv.mode === 'production' &&
-            new WorkboxPlugin.GenerateSW({
-                maximumFileSizeToCacheInBytes: 20000000,
-                clientsClaim: true,
-                skipWaiting: true
-            }),
+        new WorkboxPlugin.GenerateSW({
+            maximumFileSizeToCacheInBytes: 20000000,
+            clientsClaim: true,
+            skipWaiting: true
+        }),
         new CopyWebpackPlugin({
             patterns: [
                 { from: 'assets/favicons', to: 'favicons' },

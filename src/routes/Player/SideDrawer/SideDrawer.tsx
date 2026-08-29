@@ -67,6 +67,25 @@ const SideDrawer = memo(forwardRef<HTMLDivElement, Props>(({ seriesInfo, classNa
         });
     }, []);
 
+    const getAltThumbnail = React.useCallback((video: Video, currentSeason: number) => {
+        if (currentSeason === null || typeof video.thumbnail !== 'string' || video.thumbnail.length === 0 || typeof video.episode !== 'number' || isNaN(video.episode)) return '';
+        const previousEpisodes = metaItem.videos.filter((videoData) =>
+            videoData.season !== null && videoData.season !== 0 && videoData.season && videoData.season < currentSeason
+        ).length;
+        if (isNaN(previousEpisodes) || previousEpisodes === 0) return '';
+        //Fallback correction for Animes
+        const correctedEpisode = previousEpisodes + video.episode;
+        // This regex assumes the URL is in the format:
+        // protocol://domain/id/season/episode/rest
+        return video.thumbnail.replace(
+            /^(https?:\/\/[^/]+\/[^/]+)\/(\d+)\/(\d+)(\/.*)$/,
+            (_, base, origSeason, origEpisode, rest) => {
+                // Replace the season with "1" and the episode with the corrected value
+                return `${base}/1/${correctedEpisode}${rest}`;
+            }
+        );
+    }, [metaItem.videos]);
+
     const onMarkSeasonAsWatched = (season: number, watched: boolean) => {
         core.transport.dispatch({
             action: 'Player',
@@ -119,6 +138,7 @@ const SideDrawer = memo(forwardRef<HTMLDivElement, Props>(({ seriesInfo, classNa
                                     id={video.id}
                                     title={video.title}
                                     thumbnail={video.thumbnail}
+                                    altThumbnail={getAltThumbnail(video, season)}
                                     season={video.season}
                                     episode={video.episode}
                                     released={video.released}

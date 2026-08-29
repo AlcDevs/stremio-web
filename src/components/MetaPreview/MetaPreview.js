@@ -248,6 +248,19 @@ const MetaPreview = React.forwardRef(({ className, compact, name, logo, backgrou
                         null
                 }
                 {
+                    typeof name === 'string' ?
+                        <ActionButton
+                            className={styles['action-button']}
+                            icon={'search'}
+                            label={'Search'}
+                            tooltip={true}
+                            tabIndex={compact ? -1 : 0}
+                            href={'#/search?query=' + name}
+                        />
+                        :
+                        null
+                }
+                {
                     linksGroups.has(CONSTANTS.SHARE_LINK_CATEGORY) && !compact ?
                         <React.Fragment>
                             <ActionButton

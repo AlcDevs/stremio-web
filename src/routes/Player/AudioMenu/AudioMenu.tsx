@@ -1,7 +1,7 @@
 import React, { forwardRef, memo, MouseEvent, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import classNames from 'classnames';
-import { languages } from 'stremio/common';
+import {languages, useStorage} from 'stremio/common';
 import { Button } from 'stremio/components';
 import styles from './AudioMenu.less';
 
@@ -14,9 +14,11 @@ type Props = {
 
 const AudioMenu = memo(forwardRef<HTMLDivElement, Props>(({ className, selectedAudioTrackId, audioTracks, onAudioTrackSelected }: Props, ref) => {
     const { t } = useTranslation();
+    const [, updateStorage] = useStorage();
 
     const onAudioTrackClick = useCallback(({ currentTarget }: MouseEvent) => {
         const id = currentTarget.getAttribute('data-id')!;
+        updateStorage({audioTrackId: id});
         onAudioTrackSelected && onAudioTrackSelected(id);
     }, [onAudioTrackSelected]);
 

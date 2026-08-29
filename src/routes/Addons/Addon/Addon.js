@@ -8,7 +8,7 @@ const { default: Icon } = require('@stremio/stremio-icons/react');
 const { Button, Image } = require('stremio/components');
 const styles = require('./styles');
 
-const Addon = ({ className, id, name, version, logo, description, types, behaviorHints, installed, onInstall, onUninstall, onConfigure, onOpen, onShare, dataset }) => {
+const Addon = ({ className, id, name, version, logo, description, types, behaviorHints, installed, onInstall, onUninstall, onConfigure, onOpen, onShare, dataset, isExtension }) => {
     const { t } = useTranslation();
     const onInstallClick = React.useCallback((event) => {
         event.stopPropagation();
@@ -132,10 +132,13 @@ const Addon = ({ className, id, name, version, logo, description, types, behavio
                         <div className={styles['label']}>{installed ? t('ADDON_UNINSTALL') : behaviorHints.configurationRequired ? t('ADDON_CONFIGURE') : t('ADDON_INSTALL')}</div>
                     </Button>
                 </div>
-                <Button className={styles['share-button-container']} title={t('SHARE_ADDON')} tabIndex={-1} onClick={shareButtonOnClick}>
-                    <Icon className={styles['icon']} name={'share'} />
-                    <div className={styles['label']}>{ t('SHARE_ADDON') }</div>
-                </Button>
+                {
+                    !isExtension &&
+                    <Button className={styles['share-button-container']} title={t('SHARE_ADDON')} tabIndex={-1} onClick={shareButtonOnClick}>
+                        <Icon className={styles['icon']} name={'share'} />
+                        <div className={styles['label']}>{ t('SHARE_ADDON') }</div>
+                    </Button>
+                }
             </div>
         </Button>
     );
