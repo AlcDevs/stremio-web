@@ -8,6 +8,15 @@
     <meta name="apple-mobile-web-app-title" content="Stremio">
     <link rel="icon" type="image/x-icon" href="<%= htmlWebpackPlugin.options.faviconsPath %>/favicon.ico">
     <title>Stremio - Freedom to Stream</title>
+    <!-- Webmods: plain injected .js/.css, see webmods/AGENTS.md. Loaded before the
+         app bundle below so they observe/patch the DOM the same way the native
+         shell's own script injection does. -->
+    <% htmlWebpackPlugin.options.webmodFiles.filter((f) => f.endsWith('.css')).forEach((f) => { %>
+    <link rel="stylesheet" href="webmods/<%= f %>">
+    <% }) %>
+    <% htmlWebpackPlugin.options.webmodFiles.filter((f) => f.endsWith('.js')).forEach((f) => { %>
+    <script src="webmods/<%= f %>"></script>
+    <% }) %>
     <%= htmlWebpackPlugin.tags.headTags %>
 </head>
 
