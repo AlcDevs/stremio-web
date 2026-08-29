@@ -165,7 +165,8 @@ Addon.propTypes = {
     onConfigure: PropTypes.func,
     onOpen: PropTypes.func,
     onShare: PropTypes.func,
-    dataset: PropTypes.object
+    dataset: PropTypes.object,
+    isExtension: PropTypes.bool
 };
 
 module.exports = Addon;
