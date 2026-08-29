@@ -3,12 +3,12 @@ name: Build
 on:
   push:
     branches:
-      - development
+      - main
     tags-ignore:
       - "**"
   pull_request:
     branches:
-      - development
+      - main
   # Allow manual dispatch in GH
   workflow_dispatch:
 
@@ -40,12 +40,9 @@ jobs:
       - name: Lint
         run: pnpm lint
       - name: Deploy to GitHub Pages
-        if: github.event.pull_request.head.repo.fork == false && github.actor != 'dependabot[bot]'
+        if: github.event_name != 'pull_request'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: build
-          target-folder: ${{ github.head_ref || github.ref_name }}
-          # rebase and retry instead of force pushing, so concurrent
-          # runs (e.g. stacked PRs) don't reject each other's push
           force: false
           attempt-limit: 10
