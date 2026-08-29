@@ -17,6 +17,12 @@
         "node": ">=22",
         "pnpm": ">=11"
     },
+    "jest": {
+        "testPathIgnorePatterns": [
+            "/node_modules/",
+            "<rootDir>/webmods-tests/"
+        ]
+    },
     "dependencies": {
         "@babel/runtime": "7.29.2",
         "@sentry/browser": "8.42.0",
