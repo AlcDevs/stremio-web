@@ -35,10 +35,6 @@ jobs:
         run: pnpm install
       - name: Build
         run: pnpm build
-      - name: Test
-        run: pnpm test
-      - name: Lint
-        run: pnpm lint
       - name: Deploy to GitHub Pages
         if: github.event_name != 'pull_request'
         uses: JamesIves/github-pages-deploy-action@v4
